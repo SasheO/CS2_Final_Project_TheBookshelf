@@ -1,5 +1,4 @@
 from flask import Flask, request, jsonify
-from collections import defaultdict
 import json
 
 app = Flask(__name__)
@@ -7,29 +6,30 @@ app = Flask(__name__)
 @app.route("/", methods=['GET'])
 @app.route("/home", methods=['GET'])
 def home():
-  return "Hello bookworm!\n Enter (1) to Login or (2) Sign Up to access the Bookshelf..."
+  response = {"msg": "Hello bookworm!\n Enter (1) to Login or (2) Sign Up to access the Bookshelf..."}
+  return jsonify(response)
   
 
 @app.route("/login", methods=['POST'])
 def login():
+  response = {'msg': ""}
   data = json.loads(request.data)
-  # data should contain username and password. if it doesn't, ask them to log in.
   if "username" not in data:
-    return "Invalid login details"
+    response['msg'] = "Enter username"
   if "password" not in data:
-    return "Invalid login details"
+    response['msg'] = "Enter password"
   # todo: verify username in database, if not, ask them to sign in
   # todo: check if user has an account with those credentials in database
-  pass
+  return jsonify(response)
 
-@app.route("/signup", methods=['POST', 'GET'])
+@app.route("/signup", methods=['POST'])
 def signup():
+  response = {'msg': ""}
   data = json.loads(request.data)
-  if data == None:
-    return "Enter login credentials"
   if "username" not in data:
-    return "Enter username"
+    response['msg'] = "Enter username"
   if "password" not in data:
-    return "Enter password"
-  # todo: check if that username isn't taken
-  # todo: add username and password to database
+    response['msg'] = "Enter password"
+  # todo: verify that username is not take
+  # todo: save user to file using pickl?  
+  return jsonify(response)
