@@ -5,18 +5,19 @@ class User:
         self.__password = password
         self.books_in_possession = None
     
-    def add_book(book):
+    def add_book(self, book):
         if self.books_in_possession == None:
             self.books_in_possession = []
         self.books_in_possession.append(book)
     
-    def update_password(password):
+    def update_password(self, password):
+        # returns boolean: true if password successfully changed, false otherwise
         if self.__password == password:
-            return "choose a different password"
+            return False
         self.__password = password
-        return "password successfully changed"
+        return True
 
 
-    def __del__():
+    def __del__(self):
         # should also delete in server
         pass 

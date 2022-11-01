@@ -5,6 +5,6 @@ class Book:
         self.genre = genre
         # todo: should also save in server
     
-    def __del__():
+    def __del__(self):
         # todo: should also delete in server
         pass 
