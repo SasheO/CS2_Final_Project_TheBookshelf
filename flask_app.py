@@ -1,25 +1,35 @@
 from flask import Flask, request, jsonify
-from collections import defaultdict
 import json
 
 app = Flask(__name__)
-app.data = defaultdict(int)
 
 @app.route("/", methods=['GET'])
 @app.route("/home", methods=['GET'])
 def home():
-  # todo: ask user to log in or sign up
-  return "<p>Welcome to The Bookshelf!</p>"
+  response = {"msg": "Hello bookworm!\n Enter (1) to Login or (2) Sign Up to access the Bookshelf..."}
+  return jsonify(response)
+  
 
 @app.route("/login", methods=['POST'])
 def login():
+  response = {'msg': ""}
+  data = json.loads(request.data)
+  if "username" not in data:
+    response['msg'] = "Enter username"
+  if "password" not in data:
+    response['msg'] = "Enter password"
+  # todo: verify username in database, if not, ask them to sign in
   # todo: check if user has an account with those credentials in database
-  pass
+  return jsonify(response)
 
 @app.route("/signup", methods=['POST'])
 def signup():
-  # todo: check if that username isn't taken
-  # todo: add username and password to database
-  pass
-
-
+  response = {'msg': ""}
+  data = json.loads(request.data)
+  if "username" not in data:
+    response['msg'] = "Enter username"
+  if "password" not in data:
+    response['msg'] = "Enter password"
+  # todo: verify that username is not take
+  # todo: save user to file using pickl?  
+  return jsonify(response)
