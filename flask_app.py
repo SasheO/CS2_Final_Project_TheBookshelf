@@ -10,7 +10,7 @@ users = []
 @app.route("/", methods=['GET'])
 @app.route("/home", methods=['GET'])
 def home():
-  response = {"msg": "Hello bookworm!\n Enter (1) to Login or (2) Sign Up to access the Bookshelf..."}
+  response = {"msg": "Hello bookworm!\n Enter (1) to Login or (2) to Sign Up and access the Bookshelf..."}
   return jsonify(response)
   
 
@@ -37,12 +37,12 @@ def signup():
 
   data = json.loads(request.data)
 
-  if "username" not in data:
-    response['msg'] = "Enter username"
-    return jsonify(response)
-  if "password" not in data:
-    response['msg'] = "Enter password"
-    return jsonify(response)
+  # if "username" not in data:
+  #   response['msg'] = "Enter username"
+  #   return jsonify(response)
+  # if "password" not in data:
+  #   response['msg'] = "Enter password"
+  #   return jsonify(response)
 
   username = data["username"]
   password = data["password"]
@@ -52,12 +52,12 @@ def signup():
   users = pickle.load(file) # will be load a list of already existing User type objects
   file.close()
   
-  for user in users:
-    if user.username == username:
+  for person in users:
+    if person.username == username:
       response['msg'] = "username taken, choose another one"
       return jsonify(response)
   
-  # todo: verify password appropriate complexity
+  # todo: verify password appropriate complexity and neither username nor password is empty string
 
   new_user = User(username, password)
   users.append(new_user)
@@ -66,7 +66,7 @@ def signup():
   # Pickle the list
   pickle.dump(users, p_file)
   p_file.close()
-  
+
   response['msg'] = f"welcome to the Bookshelf {username}"
   return jsonify(response)
   
