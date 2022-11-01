@@ -28,15 +28,22 @@ def login():
 
 @app.route("/signup", methods=['POST'])
 def signup():
-  response = {'msg': ""}
+  '''
+  this function gets the request data from a client. The json request should contain a username and password.
+  The function opens a pkl (pickled) file which is where we are storing already created users, 
+  checks if no other user has the same username then creates a user object and adds it to our users in the pkl file.
+  '''
+  response = {'msg': ""} # the response given back to user
+
   data = json.loads(request.data)
-  print(data)
+
   if "username" not in data:
     response['msg'] = "Enter username"
     return jsonify(response)
   if "password" not in data:
     response['msg'] = "Enter password"
     return jsonify(response)
+
   username = data["username"]
   password = data["password"]
 
@@ -59,6 +66,7 @@ def signup():
   # Pickle the list
   pickle.dump(users, p_file)
   p_file.close()
+  
   response['msg'] = f"welcome to the Bookshelf {username}"
   return jsonify(response)
   
