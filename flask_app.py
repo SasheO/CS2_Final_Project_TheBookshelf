@@ -58,6 +58,10 @@ def signup():
       return jsonify(response)
   
   # todo: verify password appropriate complexity and neither username nor password is empty string
+  complex_password = password_validity(password)
+  if complex_password == False:
+    response['msg'] = "Your password is not complex enough"
+    return jsonify(response)
 
   new_user = User(username, password)
   users.append(new_user)
@@ -70,3 +74,22 @@ def signup():
   response['msg'] = f"welcome to the Bookshelf {username}"
   return jsonify(response)
   
+def password_validity(password):
+  l, u, p, d = 0, 0, 0, 0
+  if (len(password) >= 8):
+    for i in password:
+      # counting lowercase alphabets
+      if (i.islower()):
+        l+=1           
+      # counting uppercase alphabets
+      if (i.isupper()):
+        u+=1           
+
+      # counting digits
+      if (i.isdigit()):
+        d+=1           
+
+      # counting the mentioned special characters
+      if(i=='@'or i=='$' or i=='_'):
+        p+=1          
+  return (l>=1 and u>=1 and p>=1 and d>=1 and l+p+u+d==len(password))
