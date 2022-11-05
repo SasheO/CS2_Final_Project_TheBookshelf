@@ -1,9 +1,29 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, session
 import json, pickle
 import book
 from user import User
+from flask_login import LoginManager, login_user, current_user
+
 
 app = Flask(__name__)
+
+# to enable user session management
+login_manager = LoginManager()
+
+app.secret_key = b'random7classical-entities'
+
+login_manager.init_app(app)
+
+@login_manager.user_loader
+def load_user(user_id):
+  # verify that username is not taken
+  file = open('users.pkl','rb')
+  users = pickle.load(file) # will be load a list of already existing User type objects
+  file.close()
+  
+  for person in users:
+    if person.username == user_id:
+      return person
 
 users = []
 
@@ -16,14 +36,27 @@ def home():
 
 @app.route("/login", methods=['POST'])
 def login():
-  response = {'msg': ""}
   data = json.loads(request.data)
-  if "username" not in data:
-    response['msg'] = "Enter username"
-  if "password" not in data:
-    response['msg'] = "Enter password"
-  # todo: verify username in database, if not, ask them to sign in
-  # todo: check if user has an account with those credentials in database
+  response = {'msg': ""} # the response given back to user
+
+  username = data["username"]
+  password = data["password"]
+
+  file = open('users.pkl','rb')
+  users = pickle.load(file) # will be load a list of already existing User type objects
+  file.close()
+  
+  for person in users:
+    if person.username == username:
+      if person.login_check_password(password):
+        login_user(person)
+        response['msg'] = f"welcome back, {current_user.username}"
+        return jsonify(response)
+      else:
+        response['msg'] = "wrong password"
+        return jsonify(response)
+
+  response['msg'] = "no such user"
   return jsonify(response)
 
 @app.route("/signup", methods=['POST'])
@@ -36,14 +69,6 @@ def signup():
   response = {'msg': ""} # the response given back to user
 
   data = json.loads(request.data)
-
-  # if "username" not in data:
-  #   response['msg'] = "Enter username"
-  #   return jsonify(response)
-  # if "password" not in data:
-  #   response['msg'] = "Enter password"
-  #   return jsonify(response)
-
   username = data["username"]
   password = data["password"]
 
@@ -70,8 +95,8 @@ def signup():
   # Pickle the list
   pickle.dump(users, p_file)
   p_file.close()
-
-  response['msg'] = f"welcome to the Bookshelf {username}"
+  login_user(new_user)
+  response['msg'] = f"welcome to the Bookshelf {current_user}"
   return jsonify(response)
   
 def password_validity(password):
