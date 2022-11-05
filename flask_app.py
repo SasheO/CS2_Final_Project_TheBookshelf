@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify, session
 import json, pickle
 import book
 from user import User
-from flask_login import LoginManager, login_user, current_user
+from flask_login import LoginManager, login_user, logout_user, current_user, login_required
 
 
 app = Flask(__name__)
@@ -32,7 +32,17 @@ users = []
 def home():
   response = {"msg": "Hello bookworm!\n Enter (1) to Login or (2) to Sign Up and access the Bookshelf..."}
   return jsonify(response)
-  
+
+@app.route("/booksearch", methods=['GET'])
+@login_required
+def booksearch(book_title):
+  pass
+
+@app.route("/logout", methods=['POST'])
+@login_required
+def logout():
+  logout_user()
+  pass
 
 @app.route("/login", methods=['POST'])
 def login():
