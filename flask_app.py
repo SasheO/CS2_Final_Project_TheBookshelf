@@ -57,7 +57,8 @@ def signup():
       response['msg'] = "username taken, choose another one"
       return jsonify(response)
   
-  # todo: verify password appropriate complexity and neither username nor password is empty string
+  # todo: verify that username isnt and empty string
+  # verify password appropriate complexity
   complex_password = password_validity(password)
   if complex_password == False:
     response['msg'] = "Your password is not complex enough"
@@ -73,7 +74,33 @@ def signup():
 
   response['msg'] = f"welcome to the Bookshelf {username}"
   return jsonify(response)
-  
+
+@app.route("/bookrequest", methods=['POST']) #why is this a post and not a get
+def bookrequest():
+  response = {'msg': ""} #response given back to the server
+
+  data = json.loads(request.data)
+
+  #check if user provided a book title to check 
+  if "book title" not in data:
+    response['msg'] = "Please provide a book title"
+
+  #check if book requested is in the bookshelf and let the user know if we have the book or not.
+  else:
+    file = open('books.pkl','rb') # Why are we opening in rb and not r? is it a pkl thing?
+    books = pickle.load(file) # will load a dictionary containing books on the bookshelf
+    file.close()
+
+    book_title = data['book_title'].lower()
+    if book_title in books:
+      response['msg'] = f'''
+      Your requested book {book_title} has been found on the bookshelf!
+      You will be put in contact with the owner of the book shortly.
+      '''
+    else:
+      response['msg'] = f"sorry we do not have your requested book."
+  return jsonify(response)
+
 def password_validity(password):
   l, u, p, d = 0, 0, 0, 0
   if (len(password) >= 8):
