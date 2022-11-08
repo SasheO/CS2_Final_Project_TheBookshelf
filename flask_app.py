@@ -4,6 +4,7 @@ import book
 from user import User
 from flask_login import LoginManager, login_user, logout_user, current_user, login_required
 
+users = []
 
 app = Flask(__name__)
 
@@ -15,7 +16,7 @@ app.secret_key = b'random7classical-entities'
 login_manager.init_app(app)
 
 @login_manager.user_loader
-def load_user(user_id):
+def load_user(user_id): # needed for flask-login session management
   # verify that username is not taken
   file = open('users.pkl','rb')
   users = pickle.load(file) # will be load a list of already existing User type objects
@@ -25,12 +26,23 @@ def load_user(user_id):
     if person.username == user_id:
       return person
 
-users = []
+def save_user(user_obj):
+  file = open('users.pkl','rb')
+  users = pickle.load(file) # will be load a list of already existing User type objects
+  file.close()
+  
+  for indx in len(users):
+    person = users[indx]
+    if person.username == user_obj.username:
+      users.pop(indx)
+      users.insert(user_obj)
+  pass
 
 @app.route("/", methods=['GET'])
 @app.route("/home", methods=['GET'])
 def home():
   response = {"msg": "Hello bookworm!\n Enter (1) to Login or (2) to Sign Up and access the Bookshelf..."}
+  # TODO: enable user to navigate to log in or sign up. If user is signed in, go directly to a book request page.
   return jsonify(response)
 
 @app.route("/booksearch", methods=['GET'])
@@ -110,30 +122,62 @@ def signup():
   response['msg'] = f"welcome to the Bookshelf {current_user}"
   return jsonify(response)
 
-@app.route("/bookrequest", methods=['POST']) #why is this a post and not a get
-def bookrequest():
-  response = {'msg': ""} #response given back to the server
+@app.route("/my_books", methods=['GET','POST'])
+@login_required
+def my_books():
+  '''
+  input json: contains "option" -> "view", "add", "delete","delete all" are only valid inputs
+  if option is "delete" or "add": input json contains "titles" - a list of titles to be deleted or added
+  '''
+  response = {'msg': ""} #response given back to the client
+
+  data = json.loads(request.data)
+  option = data['option']
+  if option not in ["view", "add", "delete","delete all"]:
+    response['msg'] = "invalid option"
+    return response
+  me = load_user(current_user.username)
+
+  if option == "view":
+    response['msg'] = me.books_in_possession
+  if option == "delete":
+    # TODO: fill in here
+    save_user(me)
+    response['msg'] = "your books:" + str(me.books_in_possession)
+  if option == "add":
+    # TODO: fill in here
+    save_user(me)
+    response['msg'] = "your books:" + str(me.books_in_possession)
+  if option == "delete all":
+    me.books_in_possession = None
+    save_user(me)
+  return jsonify(response)
+
+@app.route("/bookrequest", methods=['GET']) #why is this a post and not a get --> I changed it to a get, you're right
+def bookrequest(): ## NOT TESTED
+  response = {'msg': ""} #response given back to the client
 
   data = json.loads(request.data)
 
+  '''
+  COMMENTED this out because it will probably cause an error
   #check if user provided a book title to check 
   if "book title" not in data:
     response['msg'] = "Please provide a book title"
-
+  '''
   #check if book requested is in the bookshelf and let the user know if we have the book or not.
-  else:
-    file = open('books.pkl','rb') # Why are we opening in rb and not r? is it a pkl thing?
-    books = pickle.load(file) # will load a dictionary containing books on the bookshelf
-    file.close()
+  file = open('books.pkl','rb') # Why are we opening in rb and not r? is it a pkl thing?
+  books = pickle.load(file) # will load a dictionary containing books on the bookshelf
+  file.close()
 
-    book_title = data['book_title'].lower()
-    if book_title in books:
-      response['msg'] = f'''
-      Your requested book {book_title} has been found on the bookshelf!
-      You will be put in contact with the owner of the book shortly.
-      '''
-    else:
-      response['msg'] = f"sorry we do not have your requested book."
+  book_title = data['book_title'].lower()
+  if book_title in books:
+    response['msg'] = f'''
+    Your requested book {book_title} has been found on the bookshelf!
+    You will be put in contact with the owner of the book shortly.
+    '''
+  else:
+    response['msg'] = f"sorry we do not have your requested book."
   return jsonify(response)
 
 def password_validity(password):
