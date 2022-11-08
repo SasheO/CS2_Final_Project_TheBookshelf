@@ -4,7 +4,19 @@ class User:
         self.username = username
         self.__password = password
         self.books_in_possession = None
+
+    def is_authenticated(): # needed for flask-login, rudimentary hardcoded
+        return True 
     
+    def is_active(): # needed for flask-login, rudimentary hardcoded
+        return True
+
+    def get_id(self): # needed for flask-login, rudimentary hardcoded
+        return self.username
+    
+    def is_anonymous(): # needed for flask-login, rudimentary hardcoded
+        return False
+
     def add_book(self, book):
         if self.books_in_possession == None:
             self.books_in_possession = []
@@ -16,6 +28,11 @@ class User:
             return False
         self.__password = password
         return True
+    
+    def login_check_password(self, password_entered):
+        if self.__password == password_entered:
+            return True
+        return False
 
 
     def __del__(self):
