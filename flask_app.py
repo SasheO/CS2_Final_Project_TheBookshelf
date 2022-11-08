@@ -126,20 +126,25 @@ def signup():
 @login_required
 def my_books():
   '''
-  input json: contains "option" -> "view", "edit", "delete all" are only valid inputs
+  input json: contains "option" -> "view", "add", "delete","delete all" are only valid inputs
+  if option is "delete" or "add": input json contains "titles" - a list of titles to be deleted or added
   '''
   response = {'msg': ""} #response given back to the client
 
   data = json.loads(request.data)
   option = data['option']
-  if option not in ["view", "edit", "delete all"]:
+  if option not in ["view", "add", "delete","delete all"]:
     response['msg'] = "invalid option"
     return response
   me = load_user(current_user.username)
 
   if option == "view":
     response['msg'] = me.books_in_possession
-  if option == "edit":
+  if option == "delete":
+    # TODO: fill in here
+    save_user(me)
+    response['msg'] = "your books:" + str(me.books_in_possession)
+  if option == "add":
     # TODO: fill in here
     save_user(me)
     response['msg'] = "your books:" + str(me.books_in_possession)
