@@ -52,6 +52,7 @@ def logout():
   logout_user()
   pass
 
+
 @app.route("/login", methods=['POST'])
 def login():
   data = json.loads(request.data)
@@ -61,13 +62,16 @@ def login():
   password = data["password"]
 
   load_users_from_server()
-
+  
   for person in USERS_IN_SERVER:
     if person.username == username:
       if person.login_check_password(password):
-        login_user(person)
-        response['msg'] = f"welcome back, {current_user.username}"
-        return jsonify(response)
+        if login_user(person):
+            response['msg'] = f"welcome back, {current_user.username}"
+            return jsonify(response)
+        else:
+            response['msg'] = "login failed"
+            return jsonify(response)
       else:
         response['msg'] = "wrong password"
         return jsonify(response)
@@ -79,7 +83,7 @@ def login():
 def signup():
   '''
   this function gets the request data from a client. The json request should contain a username and password.
-  The function opens a pkl (pickled) file which is where we are storing already created users,
+  The function opens a pkl (pickled) file which is where we are storing already created users, 
   checks if no other user has the same username then creates a user object and adds it to our users in the pkl file.
   '''
   response = {'msg': ""} # the response given back to user
@@ -90,14 +94,13 @@ def signup():
 
   # verify that username is not taken
   load_users_from_server()
-
+  
   for person in USERS_IN_SERVER:
     if person.username == username:
       response['msg'] = "username taken, choose another one"
       return jsonify(response)
-
-  # todo: verify that username isnt and empty string
-  # verify password appropriate complexity
+  
+  # todo: verify password appropriate complexity and neither username nor password is empty string
   complex_password = password_validity(password)
   if complex_password == False:
     response['msg'] = "Your password is not complex enough"
@@ -105,12 +108,19 @@ def signup():
 
   new_user = User(username, password)
   USERS_IN_SERVER.append(new_user)
-  print(USERS_IN_SERVER)
-  save_users_to_server()
-  login_user(new_user)
-  response['msg'] = f"welcome to the Bookshelf {current_user.username}"
-  return jsonify(response)
+  # Open a file to write bytes
+  p_file = open('users.pkl', 'wb')
+  # Pickle the list
+  pickle.dump(USERS_IN_SERVER, p_file)
+  p_file.close()
+  if login_user(person):
+    response['msg'] = f"welcome back, {current_user.username}"
+    return jsonify(response)
+  else:
+    response['msg'] = "login failed"
+    return jsonify(response)
 
+  
 @app.route("/my_books", methods=['GET','POST'])
 @login_required
 def my_books(): #NOT TESTED
