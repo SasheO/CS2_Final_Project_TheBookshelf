@@ -5,6 +5,7 @@ from user import User
 from flask_login import LoginManager, login_user, logout_user, current_user, login_required
 
 users = []
+books_in_server = {}
 
 app = Flask(__name__)
 
@@ -205,6 +206,30 @@ def bookrequest(): ## NOT TESTED
   else:
     response['msg'] = f"sorry we do not have your requested book."
   return jsonify(response)
+
+def save_books_in_server():
+  '''
+  reusable function that saves the books dictionary type in books_in_server global variable to the books.pkl file on server
+  '''
+  pass
+
+def load_books_in_server():
+  '''
+  reusable function that loads the books in the books.pkl file to books_in_server global variable as a dictionary type
+  '''
+  pass
+
+def save_users():
+  '''
+  reusable function that saves the user objects in users global variable to the users.pkl file on server
+  '''
+  pass
+
+def load_users():
+  '''
+  reusable function that loads a list of user objects to users global variable from the users.pkl file on server
+  '''
+  pass
 
 def password_validity(password):
   l, u, p, d = 0, 0, 0, 0
