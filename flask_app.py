@@ -121,7 +121,7 @@ def signup():
 
 @app.route("/my_books", methods=['GET','POST'])
 @login_required
-def my_books():
+def my_books(): #NOT TESTED
   '''
   input json: contains "option" -> "view", "add", "delete","delete all" are only valid inputs
   if option is "delete" or "add": input json contains "titles" - a list of titles to be deleted or added
@@ -141,21 +141,38 @@ def my_books():
   
   if option == "delete":
     # TODO: fill in here
+    file = open('books.pkl','rb')
+    books_in_server = pickle.load(file) # will be load a list of already existing User type objects
+    file.close()
+    
     titles = data['titles']
     for title in titles:
       me.delete_book(title)
+      if title in books_in_server:
+        books_in_server.pop(title)
     save_user(me)
+    # TODO: save books.pkl
     response['msg'] = "your updated books:" + str(me.books_in_possession)
   
   if option == "add":
-    # TODO: fill in here
+    file = open('books.pkl','rb')
+    books_in_server = pickle.load(file) # will be load a list of already existing User type objects
+    file.close()
+
     titles = data['titles']
     for title in titles:
-      me.add_book(Book(title))
+      me.add_book(Book(title, me))
+      if title in books_in_server:
+        books_in_server[title].append((me.username, True))
     save_user(me)
+    # TODO: save books.pkl
     response['msg'] = "your updated books:" + str(me.books_in_possession)
   
   if option == "delete all":
+    for item in me.books_in_possession:
+      if title in books_in_server:
+        # TODO: fill in
+        pass 
     me.books_in_possession = None
     save_user(me)
     response['msg'] = "your updated books:" + str(me.books_in_possession)
