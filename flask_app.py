@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, session
+from flask import Flask, request, jsonify #, session
 import json, pickle
 from book import Book
 from user import User
@@ -22,19 +22,20 @@ def load_user(user_id): # needed for flask-login session management
   file = open('users.pkl','rb')
   users = pickle.load(file) # will be load a list of already existing User type objects
   file.close()
-  
+
   for person in users:
     if person.username == user_id:
       return person
 
 def save_user(user_obj):
   load_users_from_server()
-  
+
   for indx in len(USERS_IN_SERVER):
     person = USERS_IN_SERVER[indx]
     if person.username == user_obj.username:
       USERS_IN_SERVER.pop(indx)
-      USERS_IN_SERVER.insert(user_obj)
+      USERS_IN_SERVER.append(user_obj)
+      return
 
 @app.route("/", methods=['GET'])
 @app.route("/home", methods=['GET'])
@@ -60,7 +61,7 @@ def login():
   password = data["password"]
 
   load_users_from_server()
-  
+
   for person in USERS_IN_SERVER:
     if person.username == username:
       if person.login_check_password(password):
@@ -78,7 +79,7 @@ def login():
 def signup():
   '''
   this function gets the request data from a client. The json request should contain a username and password.
-  The function opens a pkl (pickled) file which is where we are storing already created users, 
+  The function opens a pkl (pickled) file which is where we are storing already created users,
   checks if no other user has the same username then creates a user object and adds it to our users in the pkl file.
   '''
   response = {'msg': ""} # the response given back to user
@@ -89,12 +90,12 @@ def signup():
 
   # verify that username is not taken
   load_users_from_server()
-  
+
   for person in USERS_IN_SERVER:
     if person.username == username:
       response['msg'] = "username taken, choose another one"
       return jsonify(response)
-  
+
   # todo: verify that username isnt and empty string
   # verify password appropriate complexity
   complex_password = password_validity(password)
@@ -104,6 +105,7 @@ def signup():
 
   new_user = User(username, password)
   USERS_IN_SERVER.append(new_user)
+  print(USERS_IN_SERVER)
   save_users_to_server()
   login_user(new_user)
   response['msg'] = f"welcome to the Bookshelf {current_user.username}"
@@ -121,7 +123,6 @@ def my_books(): #NOT TESTED
 
   data = json.loads(request.data)
   option = data['option']
-  username = data['username']
 
   if option not in ["view", "add", "delete","delete all"]:
     response['msg'] = "invalid option"
@@ -130,7 +131,7 @@ def my_books(): #NOT TESTED
   if option == "view":
     book_titles = [item.title for item in current_user.books_in_possession]
     response['msg'] = book_titles
-  
+
   if option == "delete":
     load_books_from_server()
     titles = data['titles']
@@ -146,10 +147,11 @@ def my_books(): #NOT TESTED
           ndx += 1
 
     save_user(current_user)
+    save_users_to_server()
     save_books_to_server()
 
     response['msg'] = "your updated books:" + str(current_user.books_in_possession)
-  
+
   if option == "add":
     load_books_from_server()
 
@@ -159,10 +161,11 @@ def my_books(): #NOT TESTED
       if title in BOOKS_IN_SERVER:
         BOOKS_IN_SERVER[title].append((current_user.username, True))
     save_user(current_user)
+    save_users_to_server()
     save_books_to_server()
 
     response['msg'] = "your updated books:" + str(current_user.books_in_possession)
-  
+
   if option == "delete all":
     for item in current_user.books_in_possession:
       title = item.title
@@ -188,7 +191,7 @@ def bookrequest(): ## NOT TESTED
 
   '''
   COMMENTED this out because it will probably cause an error
-  #check if user provided a book title to check 
+  #check if user provided a book title to check
   if "book title" not in data:
     response['msg'] = "Please provide a book title"
   '''
@@ -204,7 +207,7 @@ def bookrequest(): ## NOT TESTED
     You will be put in contact with the owner of the book shortly.
     '''
   else:
-    response['msg'] = f"sorry we do not have your requested book."
+    response['msg'] = "sorry we do not have your requested book."
   return jsonify(response)
 
 def save_books_to_server():
@@ -232,6 +235,7 @@ def save_users_to_server():
   # Open a file to write bytes
   p_file = open('users.pkl', 'wb')
   # Pickle the list
+  print(USERS_IN_SERVER)
   pickle.dump(USERS_IN_SERVER, p_file)
   p_file.close()
 
@@ -242,6 +246,7 @@ def load_users_from_server():
   global USERS_IN_SERVER
   file = open('users.pkl','rb')
   USERS_IN_SERVER = pickle.load(file) # will be load a list of already existing User type objects
+  print(USERS_IN_SERVER)
   file.close()
 
 def password_validity(password):
@@ -250,16 +255,17 @@ def password_validity(password):
     for i in password:
       # counting lowercase alphabets
       if (i.islower()):
-        l+=1           
+        l+=1
       # counting uppercase alphabets
       if (i.isupper()):
-        u+=1           
+        u+=1
 
       # counting digits
       if (i.isdigit()):
-        d+=1           
+        d+=1
 
       # counting the mentioned special characters
       if(i=='@'or i=='$' or i=='_'):
-        p+=1          
+        p+=1
   return (l>=1 and u>=1 and p>=1 and d>=1 and l+p+u+d==len(password))
+
