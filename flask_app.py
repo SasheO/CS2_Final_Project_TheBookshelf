@@ -45,14 +45,11 @@ def home():
   # TODO: enable user to navigate to log in or sign up. If user is signed in, go directly to a book request page.
   return jsonify(response)
 
-@app.route("/booksearch", methods=['GET'])
-@login_required
-def booksearch(book_title):
-  pass
 
 @app.route("/logout", methods=['POST'])
 @login_required
 def logout():
+  # TODO: fill in
   logout_user()
   pass
 
@@ -162,7 +159,7 @@ def my_books():
     me.books_in_possession = None
     save_user(me)
     response['msg'] = "your updated books:" + str(me.books_in_possession)
-    
+
   return jsonify(response)
 
 @app.route("/bookrequest", methods=['GET']) #why is this a post and not a get --> I changed it to a get, you're right
