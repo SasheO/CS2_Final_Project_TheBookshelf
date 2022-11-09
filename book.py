@@ -1,8 +1,7 @@
-from user import User
 class Book:
     def __init__(self, title: str, owner, author=None, genre=None):
         self.title = title
-        self.owner = owner # User type
+        self.owner_username = owner # User type
         self.author = author
         self.genre = genre
         self.available_for_lending = True

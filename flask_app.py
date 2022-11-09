@@ -28,16 +28,13 @@ def load_user(user_id): # needed for flask-login session management
       return person
 
 def save_user(user_obj):
-  file = open('users.pkl','rb')
-  users = pickle.load(file) # will be load a list of already existing User type objects
-  file.close()
+  load_users_from_server()
   
   for indx in len(users):
     person = users[indx]
     if person.username == user_obj.username:
       users.pop(indx)
       users.insert(user_obj)
-  pass
 
 @app.route("/", methods=['GET'])
 @app.route("/home", methods=['GET'])
@@ -62,9 +59,7 @@ def login():
   username = data["username"]
   password = data["password"]
 
-  file = open('users.pkl','rb')
-  users = pickle.load(file) # will be load a list of already existing User type objects
-  file.close()
+  load_users_from_server()
   
   for person in users:
     if person.username == username:
@@ -93,9 +88,7 @@ def signup():
   password = data["password"]
 
   # verify that username is not taken
-  file = open('users.pkl','rb')
-  users = pickle.load(file) # will be load a list of already existing User type objects
-  file.close()
+  load_users_from_server()
   
   for person in users:
     if person.username == username:
@@ -111,11 +104,7 @@ def signup():
 
   new_user = User(username, password)
   users.append(new_user)
-  # Open a file to write bytes
-  p_file = open('users.pkl', 'wb')
-  # Pickle the list
-  pickle.dump(users, p_file)
-  p_file.close()
+  save_users_to_server()
   login_user(new_user)
   response['msg'] = f"welcome to the Bookshelf {current_user}"
   return jsonify(response)
@@ -125,55 +114,64 @@ def signup():
 def my_books(): #NOT TESTED
   '''
   input json: contains "option" -> "view", "add", "delete","delete all" are only valid inputs
+  contains "username" with username of who sent request
   if option is "delete" or "add": input json contains "titles" - a list of titles to be deleted or added
   '''
   response = {'msg': ""} #response given back to the client
 
   data = json.loads(request.data)
   option = data['option']
+  username = data['username']
+  me = load_user(username)
+
   if option not in ["view", "add", "delete","delete all"]:
     response['msg'] = "invalid option"
     return response
-  me = load_user(current_user.username)
 
   if option == "view":
     book_titles = [item.title for item in me.books_in_possession]
     response['msg'] = book_titles
   
   if option == "delete":
-    # TODO: fill in here
-    file = open('books.pkl','rb')
-    books_in_server = pickle.load(file) # will be load a list of already existing User type objects
-    file.close()
-    
+    load_books_from_server()
     titles = data['titles']
+
     for title in titles:
       me.delete_book(title)
       if title in books_in_server:
         books_in_server.pop(title)
+
     save_user(me)
-    # TODO: save books.pkl
+    save_books_to_server()
+
     response['msg'] = "your updated books:" + str(me.books_in_possession)
   
   if option == "add":
-    file = open('books.pkl','rb')
-    books_in_server = pickle.load(file) # will be load a list of already existing User type objects
-    file.close()
+    load_books_from_server()
 
     titles = data['titles']
     for title in titles:
-      me.add_book(Book(title, me))
+      me.add_book(Book(title, me.username))
       if title in books_in_server:
         books_in_server[title].append((me.username, True))
     save_user(me)
-    # TODO: save books.pkl
+    save_books_to_server()
+
     response['msg'] = "your updated books:" + str(me.books_in_possession)
   
   if option == "delete all":
     for item in me.books_in_possession:
+      title = item.title
       if title in books_in_server:
         # TODO: fill in
+        ndx = 0 # will be used as index in case user has more than one book with same title
+        for indx in range(len(books_in_server[title])):
+          if books_in_server[title][ndx][0] == me.username:
+            books_in_server[title].pop(ndx)
+            ndx -= 1
+          ndx += 1
         pass 
+    save_books_to_server()
     me.books_in_possession = None
     save_user(me)
     response['msg'] = "your updated books:" + str(me.books_in_possession)
@@ -207,28 +205,37 @@ def bookrequest(): ## NOT TESTED
     response['msg'] = f"sorry we do not have your requested book."
   return jsonify(response)
 
-def save_books_in_server():
+def save_books_to_server():
   '''
   reusable function that saves the books dictionary type in books_in_server global variable to the books.pkl file on server
   '''
   pass
 
-def load_books_in_server():
+def load_books_from_server():
   '''
   reusable function that loads the books in the books.pkl file to books_in_server global variable as a dictionary type
   '''
-  pass
+  file = open('books.pkl','rb')
+  books_in_server = pickle.load(file) # will be load a list of already existing User type objects
+  file.close()
 
-def save_users():
+def save_users_to_server():
   '''
   reusable function that saves the user objects in users global variable to the users.pkl file on server
   '''
-  pass
+  # Open a file to write bytes
+  p_file = open('users.pkl', 'wb')
+  # Pickle the list
+  pickle.dump(users, p_file)
+  p_file.close()
 
-def load_users():
+def load_users_from_server():
   '''
   reusable function that loads a list of user objects to users global variable from the users.pkl file on server
   '''
+  file = open('users.pkl','rb')
+  users = pickle.load(file) # will be load a list of already existing User type objects
+  file.close()
   pass
 
 def password_validity(password):
