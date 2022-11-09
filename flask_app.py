@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify, session
 import json, pickle
-import book
+from book import Book
 from user import User
 from flask_login import LoginManager, login_user, logout_user, current_user, login_required
 
@@ -139,18 +139,30 @@ def my_books():
   me = load_user(current_user.username)
 
   if option == "view":
-    response['msg'] = me.books_in_possession
+    book_titles = [item.title for item in me.books_in_possession]
+    response['msg'] = book_titles
+  
   if option == "delete":
     # TODO: fill in here
+    titles = data['titles']
+    for title in titles:
+      me.delete_book(title)
     save_user(me)
-    response['msg'] = "your books:" + str(me.books_in_possession)
+    response['msg'] = "your updated books:" + str(me.books_in_possession)
+  
   if option == "add":
     # TODO: fill in here
+    titles = data['titles']
+    for title in titles:
+      me.add_book(Book(title))
     save_user(me)
-    response['msg'] = "your books:" + str(me.books_in_possession)
+    response['msg'] = "your updated books:" + str(me.books_in_possession)
+  
   if option == "delete all":
     me.books_in_possession = None
     save_user(me)
+    response['msg'] = "your updated books:" + str(me.books_in_possession)
+    
   return jsonify(response)
 
 @app.route("/bookrequest", methods=['GET']) #why is this a post and not a get --> I changed it to a get, you're right
