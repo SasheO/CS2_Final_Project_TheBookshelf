@@ -155,12 +155,12 @@ def my_books(): #NOT TESTED
     for title in titles:
       person.delete_book(title)
       if title in BOOKS_IN_SERVER:
-        ndx = 0 # will be used as index in case user has more than one book with same title
-        for indx in range(len(BOOKS_IN_SERVER[title])):
-          if BOOKS_IN_SERVER[title][ndx][0] == person.username:
-            BOOKS_IN_SERVER[title].pop(ndx)
-            ndx -= 1
-          ndx += 1
+        indx = 0 # will be used as index in case user has more than one book with same title
+        for x in range(len(BOOKS_IN_SERVER[title])):
+          if BOOKS_IN_SERVER[title][indx][0] == person.username:
+            BOOKS_IN_SERVER[title].pop(indx)
+            indx -= 1
+          indx += 1
 
     save_user(person)
     save_users_to_server()
@@ -176,6 +176,8 @@ def my_books(): #NOT TESTED
       person.add_book(Book(title, person.username))
       if title in BOOKS_IN_SERVER:
         BOOKS_IN_SERVER[title].append((person.username, True))
+      else:
+        BOOKS_IN_SERVER[title] = [(person.username, True)]
     save_user(person)
     save_users_to_server()
     save_books_to_server()
@@ -186,18 +188,18 @@ def my_books(): #NOT TESTED
     for item in person.books_in_possession:
       title = item.title
       if title in BOOKS_IN_SERVER:
-        ndx = 0 # will be used as index in case user has more than one book with same title
-        for indx in range(len(BOOKS_IN_SERVER[title])):
-          if BOOKS_IN_SERVER[title][ndx][0] == person.username:
-            BOOKS_IN_SERVER[title].pop(ndx)
-            ndx -= 1
-          ndx += 1
+        indx = 0 # will be used as index in case user has more than one book with same title
+        for x in range(len(BOOKS_IN_SERVER[title])):
+          if BOOKS_IN_SERVER[title][indx][0] == person.username:
+            BOOKS_IN_SERVER[title].pop(indx)
+            indx -= 1
+          indx += 1
     save_books_to_server()
     person.books_in_possession = None
     save_user(person)
     save_users_to_server()
     person = load_user(person.username)
-    response['msg'] = "your updated books:" + str([x.title for x in person.books_in_possession])
+    response['msg'] = "your updated books:" + str(person.books_in_possession)
 
   return jsonify(response)
 
