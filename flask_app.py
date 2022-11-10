@@ -30,7 +30,7 @@ def load_user(user_id): # needed for flask-login session management
 def save_user(user_obj):
   load_users_from_server()
 
-  for indx in len(USERS_IN_SERVER):
+  for indx in range(len(USERS_IN_SERVER)):
     person = USERS_IN_SERVER[indx]
     if person.username == user_obj.username:
       USERS_IN_SERVER.pop(indx)
