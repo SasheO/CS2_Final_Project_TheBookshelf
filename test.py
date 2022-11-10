@@ -1,5 +1,5 @@
 # issues: login_required: how to save sessions?
-# issues: 
+# issues: add, delete, etc in my_books don't work
 
 import requests
 
