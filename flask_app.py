@@ -62,7 +62,7 @@ def login():
   password = data["password"]
 
   load_users_from_server()
-  
+
   for person in USERS_IN_SERVER:
     if person.username == username:
       if person.login_check_password(password):
@@ -84,7 +84,7 @@ def login():
 def signup():
   '''
   this function gets the request data from a client. The json request should contain a username and password.
-  The function opens a pkl (pickled) file which is where we are storing already created users, 
+  The function opens a pkl (pickled) file which is where we are storing already created users,
   checks if no other user has the same username then creates a user object and adds it to our users in the pkl file.
   '''
   response = {'msg': ""} # the response given back to user
@@ -95,12 +95,12 @@ def signup():
 
   # verify that username is not taken
   load_users_from_server()
-  
+
   for person in USERS_IN_SERVER:
     if person.username == username:
       response['msg'] = "username taken, choose another one"
       return jsonify(response)
-  
+
   # todo: verify password appropriate complexity and neither username nor password is empty string
   complex_password = password_validity(password)
   if complex_password == False:
@@ -121,7 +121,7 @@ def signup():
     response['msg'] = "login failed"
     return jsonify(response)
 
-# @login_required  
+# @login_required
 # login required does not work because session data is not stored, so the user is essentially not logged in.
 @app.route("/my_books", methods=['GET','POST'])
 def my_books(): #NOT TESTED
@@ -165,8 +165,8 @@ def my_books(): #NOT TESTED
     save_user(person)
     save_users_to_server()
     save_books_to_server()
-
-    response['msg'] = "your updated books:" + str(current_user.books_in_possession)
+    person = load_user(person.username)
+    response['msg'] = "your updated books:" + str(person.books_in_possession)
 
   if option == "add":
     load_books_from_server()
@@ -179,8 +179,8 @@ def my_books(): #NOT TESTED
     save_user(person)
     save_users_to_server()
     save_books_to_server()
-
-    response['msg'] = "your updated books:" + str(person.books_in_possession)
+    person = load_user(person.username)
+    response['msg'] = "your updated books:" + str([x.title for x in person.books_in_possession])
 
   if option == "delete all":
     for item in person.books_in_possession:
@@ -195,6 +195,8 @@ def my_books(): #NOT TESTED
     save_books_to_server()
     person.books_in_possession = None
     save_user(person)
+    save_users_to_server()
+    person = load_user(person.username)
     response['msg'] = "your updated books:" + str(person.books_in_possession)
 
   return jsonify(response)
