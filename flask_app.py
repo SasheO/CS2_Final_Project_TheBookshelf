@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify #, session
+from flask import Flask, request, jsonify, session
 import json, pickle
 from book import Book
 from user import User
@@ -68,6 +68,7 @@ def login():
       if person.login_check_password(password):
         if login_user(person):
             response['msg'] = f"welcome back, {current_user.username}"
+            response["session"] = str(session)
             return jsonify(response)
         else:
             response['msg'] = "login failed"
@@ -120,9 +121,9 @@ def signup():
     response['msg'] = "login failed"
     return jsonify(response)
 
-  
+# @login_required  
+# login required does not work because session data is not stored, so the user is essentially not logged in.
 @app.route("/my_books", methods=['GET','POST'])
-@login_required
 def my_books(): #NOT TESTED
   '''
   input json: contains "option" -> "view", "add", "delete","delete all" are only valid inputs
@@ -133,30 +134,35 @@ def my_books(): #NOT TESTED
 
   data = json.loads(request.data)
   option = data['option']
+  username = data['username']
+  person = load_user(username)
 
   if option not in ["view", "add", "delete","delete all"]:
     response['msg'] = "invalid option"
     return response
 
   if option == "view":
-    book_titles = [item.title for item in current_user.books_in_possession]
-    response['msg'] = book_titles
+    if person.books_in_possession == None:
+      response['msg'] = "No books"
+    else:
+      book_titles = [item.title for item in person.books_in_possession]
+      response['msg'] = book_titles
 
   if option == "delete":
     load_books_from_server()
     titles = data['titles']
 
     for title in titles:
-      current_user.delete_book(title)
+      person.delete_book(title)
       if title in BOOKS_IN_SERVER:
         ndx = 0 # will be used as index in case user has more than one book with same title
         for indx in range(len(BOOKS_IN_SERVER[title])):
-          if BOOKS_IN_SERVER[title][ndx][0] == current_user.username:
+          if BOOKS_IN_SERVER[title][ndx][0] == person.username:
             BOOKS_IN_SERVER[title].pop(ndx)
             ndx -= 1
           ndx += 1
 
-    save_user(current_user)
+    save_user(person)
     save_users_to_server()
     save_books_to_server()
 
@@ -167,29 +173,29 @@ def my_books(): #NOT TESTED
 
     titles = data['titles']
     for title in titles:
-      current_user.add_book(Book(title, current_user.username))
+      person.add_book(Book(title, person.username))
       if title in BOOKS_IN_SERVER:
-        BOOKS_IN_SERVER[title].append((current_user.username, True))
-    save_user(current_user)
+        BOOKS_IN_SERVER[title].append((person.username, True))
+    save_user(person)
     save_users_to_server()
     save_books_to_server()
 
-    response['msg'] = "your updated books:" + str(current_user.books_in_possession)
+    response['msg'] = "your updated books:" + str(person.books_in_possession)
 
   if option == "delete all":
-    for item in current_user.books_in_possession:
+    for item in person.books_in_possession:
       title = item.title
       if title in BOOKS_IN_SERVER:
         ndx = 0 # will be used as index in case user has more than one book with same title
         for indx in range(len(BOOKS_IN_SERVER[title])):
-          if BOOKS_IN_SERVER[title][ndx][0] == current_user.username:
+          if BOOKS_IN_SERVER[title][ndx][0] == person.username:
             BOOKS_IN_SERVER[title].pop(ndx)
             ndx -= 1
           ndx += 1
     save_books_to_server()
-    current_user.books_in_possession = None
-    save_user(current_user)
-    response['msg'] = "your updated books:" + str(current_user.books_in_possession)
+    person.books_in_possession = None
+    save_user(person)
+    response['msg'] = "your updated books:" + str(person.books_in_possession)
 
   return jsonify(response)
 
