@@ -161,6 +161,8 @@ def my_books(): #NOT TESTED
             BOOKS_IN_SERVER[title].pop(indx)
             indx -= 1
           indx += 1
+        if BOOKS_IN_SERVER[title] == []:
+          BOOKS_IN_SERVER.pop(title)
 
     save_user(person)
     save_users_to_server()
