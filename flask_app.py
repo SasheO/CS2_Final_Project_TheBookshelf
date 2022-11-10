@@ -143,7 +143,7 @@ def my_books(): #NOT TESTED
 
   if option == "view":
     if person.books_in_possession == None:
-      response['msg'] = "No books"
+      response['msg'] = "None"
     else:
       book_titles = [item.title for item in person.books_in_possession]
       response['msg'] = book_titles
@@ -166,7 +166,7 @@ def my_books(): #NOT TESTED
     save_users_to_server()
     save_books_to_server()
     person = load_user(person.username)
-    response['msg'] = "your updated books:" + str(person.books_in_possession)
+    response['msg'] = "your updated books:" + str([x.title for x in person.books_in_possession])
 
   if option == "add":
     load_books_from_server()
@@ -197,7 +197,7 @@ def my_books(): #NOT TESTED
     save_user(person)
     save_users_to_server()
     person = load_user(person.username)
-    response['msg'] = "your updated books:" + str(person.books_in_possession)
+    response['msg'] = "your updated books:" + str([x.title for x in person.books_in_possession])
 
   return jsonify(response)
 

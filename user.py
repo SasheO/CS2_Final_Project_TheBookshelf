@@ -26,11 +26,13 @@ class User:
     def delete_book(self, book_title):
         if self.books_in_possession == None:
             return
-        for indx in len(self.books_in_possession):
+        indx = 0
+        for x in range(len(self.books_in_possession)):
             item = self.books_in_possession[indx]
             if item.title == book_title:
                 self.books_in_possession.pop(indx)
-                return
+                indx -= 1
+            indx += 1
     
     def update_password(self, password):
         # returns boolean: true if password successfully changed, false otherwise
