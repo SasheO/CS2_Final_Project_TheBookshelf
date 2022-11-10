@@ -1,7 +1,7 @@
 # issues: signed up users don't get saved in server but helper function for that works fine
 
 import requests
-user_name = 'eleixxxxxxx'
+user_name = 'Hey'
 password = "CompledPassword5@"
 # password = "Testuser4"
 
