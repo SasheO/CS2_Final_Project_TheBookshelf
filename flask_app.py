@@ -217,12 +217,17 @@ def bookrequest(): ## NOT TESTED
   if "book title" not in data:
     response['msg'] = "Please provide a book title"
   '''
+
+  #check if user provided a book title to check 
+  if "book title" not in data:
+    response['msg'] = "Please provide a book title"
+
   #check if book requested is in the bookshelf and let the user know if we have the book or not.
   file = open('books.pkl','rb') # Why are we opening in rb and not r? is it a pkl thing?
   books = pickle.load(file) # will load a dictionary containing books on the bookshelf
   file.close()
 
-  book_title = data['book_title'].lower()
+  book_title = data['book title'].lower()
   if book_title in books:
     response['msg'] = f'''
     Your requested book {book_title} has been found on the bookshelf!
