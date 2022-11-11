@@ -1,9 +1,6 @@
-# issues: login_required: how to save sessions?
-# issues: add, delete, etc in my_books don't work
-
 import requests
 
-user_name = 'mimmiso'
+user_name = 'msmmiso'
 password = "CompledPassword5@"
 # password = "Testuser4"
 
@@ -15,7 +12,11 @@ response = requests.post(BASE_URL + "login", json=signup_data)
 print(response)
 print(response.json())
 
-my_books_data = {"option": "view", 'user':user_name}
+my_books_data = {
+  "option": "view",
+  "username": user_name,
+  "titles": ["Pachinko", "Against the Loveless World"]
+}
 response = requests.post(BASE_URL + "my_books", json=my_books_data)
 print(response)
 print(response.json())

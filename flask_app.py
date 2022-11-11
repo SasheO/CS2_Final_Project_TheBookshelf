@@ -153,16 +153,17 @@ def my_books(): #NOT TESTED
     titles = data['titles']
 
     for title in titles:
+      title_lower = title.lower()
       person.delete_book(title)
-      if title in BOOKS_IN_SERVER:
+      if title_lower in BOOKS_IN_SERVER:
         indx = 0 # will be used as index in case user has more than one book with same title
-        for x in range(len(BOOKS_IN_SERVER[title])):
-          if BOOKS_IN_SERVER[title][indx][0] == person.username:
-            BOOKS_IN_SERVER[title].pop(indx)
+        for x in range(len(BOOKS_IN_SERVER[title_lower])):
+          if BOOKS_IN_SERVER[title_lower][indx][0] == person.username:
+            BOOKS_IN_SERVER[title_lower].pop(indx)
             indx -= 1
           indx += 1
-        if BOOKS_IN_SERVER[title] == []:
-          BOOKS_IN_SERVER.pop(title)
+        if BOOKS_IN_SERVER[title_lower] == []:
+          BOOKS_IN_SERVER.pop(title_lower)
 
     save_user(person)
     save_users_to_server()
@@ -175,11 +176,12 @@ def my_books(): #NOT TESTED
 
     titles = data['titles']
     for title in titles:
+      title_lower = title.lower()
       person.add_book(Book(title, person.username))
-      if title in BOOKS_IN_SERVER:
-        BOOKS_IN_SERVER[title].append((person.username, True))
+      if title_lower in BOOKS_IN_SERVER:
+        BOOKS_IN_SERVER[title_lower].append((person.username, True))
       else:
-        BOOKS_IN_SERVER[title] = [(person.username, True)]
+        BOOKS_IN_SERVER[title_lower] = [(person.username, True)]
     save_user(person)
     save_users_to_server()
     save_books_to_server()
@@ -189,12 +191,15 @@ def my_books(): #NOT TESTED
   if option == "delete all":
     for item in person.books_in_possession:
       title = item.title
-      if title in BOOKS_IN_SERVER:
+      title_lower = title.lower()
+      if title_lower in BOOKS_IN_SERVER:
         indx = 0 # will be used as index in case user has more than one book with same title
-        for x in range(len(BOOKS_IN_SERVER[title])):
-          if BOOKS_IN_SERVER[title][indx][0] == person.username:
-            BOOKS_IN_SERVER[title].pop(indx)
+        for x in range(len(BOOKS_IN_SERVER[title_lower])):
+          if BOOKS_IN_SERVER[title_lower][indx][0] == person.username:
+            BOOKS_IN_SERVER[title_lower].pop(indx)
             indx -= 1
+          if BOOKS_IN_SERVER[title_lower] == []:
+            BOOKS_IN_SERVER.pop(title_lower)
           indx += 1
     save_books_to_server()
     person.books_in_possession = None
@@ -208,6 +213,11 @@ def my_books(): #NOT TESTED
 @app.route("/bookrequest", methods=['GET']) #why is this a post and not a get --> I changed it to a get, you're right
 def bookrequest(): ## NOT TESTED
   response = {'msg': ""} #response given back to the client
+
+  # for testing purposes
+  load_books_from_server()
+  response['books_in_server'] = str(BOOKS_IN_SERVER)
+
 
   data = json.loads(request.data)
 
