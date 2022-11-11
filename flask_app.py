@@ -189,6 +189,9 @@ def my_books(): #NOT TESTED
     response['msg'] = "your updated books:" + str([x.title for x in person.books_in_possession])
 
   if option == "delete all":
+    if person.books_in_possession == None:
+      response['msg'] = "your updated books: 'None'"
+      return jsonify(response)
     for item in person.books_in_possession:
       title = item.title
       title_lower = title.lower()
