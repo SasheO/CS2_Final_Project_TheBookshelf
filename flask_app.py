@@ -169,7 +169,11 @@ def my_books(): #NOT TESTED
     save_users_to_server()
     save_books_to_server()
     person = load_user(person.username)
-    response['msg'] = "your updated books:" + str([x.title for x in person.books_in_possession])
+    if person.books_in_possession == None:
+      response['msg'] = "your updated books:" + str(person.books_in_possession)
+    else:
+      response['msg'] = "your updated books:" + str([x.title for x in person.books_in_possession])
+
 
   if option == "add":
     load_books_from_server()
