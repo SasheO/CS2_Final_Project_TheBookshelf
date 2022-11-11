@@ -103,8 +103,8 @@ def signup():
 
   # todo: verify password appropriate complexity and neither username nor password is empty string
   complex_password = password_validity(password)
-  if complex_password == False:
-    response['msg'] = "Your password is not complex enough"
+  if complex_password != 'pass':
+    response['msg'] = complex_password
     return jsonify(response)
 
   new_user = User(username, password)
@@ -228,16 +228,10 @@ def bookrequest(): ## NOT TESTED
 
   data = json.loads(request.data)
 
-  '''
-  COMMENTED this out because it will probably cause an error
-  #check if user provided a book title to check
+  #check if user provided a book title to check and returns a detailed error message if not.
   if "book title" not in data:
-    response['msg'] = "Please provide a book title"
-  '''
-
-  #check if user provided a book title to check 
-  if "book title" not in data:
-    response['msg'] = "Please provide a book title"
+    response['msg'] = "Please provide a book title. Remember to make the key of the dictionary 'book title"
+    return jsonify(response)
 
   #check if book requested is in the bookshelf and let the user know if we have the book or not.
   file = open('books.pkl','rb') # Why are we opening in rb and not r? is it a pkl thing?
@@ -294,6 +288,7 @@ def load_users_from_server():
   file.close()
 
 def password_validity(password):
+  repsonse_message = ""
   l, u, p, d = 0, 0, 0, 0
   if (len(password) >= 8):
     for i in password:
@@ -311,5 +306,18 @@ def password_validity(password):
       # counting the mentioned special characters
       if(i=='@'or i=='$' or i=='_'):
         p+=1
-  return (l>=1 and u>=1 and p>=1 and d>=1 and l+p+u+d==len(password))
+
+    if l<1:
+      response_message = 'Your password needs at least 1 lowercase alphabet'
+    elif u<1:
+      response_message = 'Your password needs at least 1 uppercase alphabet'
+    elif d<1:
+      response_message = 'Your password needs at least 1 digit'
+    elif p<1:
+      response_message = 'Your password needs at least 1 of these special characters: "@$_"'
+  else:
+    response_message = "Your password needs to be at lest 8 characters long"
+  if l>=1 and u>=1 and p>=1 and d>=1 and l+p+u+d==len(password):
+    response_message = 'pass'
+  return response_message
 
