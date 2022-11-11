@@ -230,7 +230,8 @@ def bookrequest(): ## NOT TESTED
 
   #check if user provided a book title to check 
   if "book title" not in data:
-    response['msg'] = "Please provide a book title"
+    response['msg'] = "Please provide a book title. Remember to make the key of the dictionary 'book title"
+    return jsonify(response)
 
   #check if book requested is in the bookshelf and let the user know if we have the book or not.
   file = open('books.pkl','rb') # Why are we opening in rb and not r? is it a pkl thing?
