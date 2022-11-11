@@ -1,3 +1,4 @@
+from book import Book
 class User:
     def __init__(self, username, password):
         # should also save user in server
@@ -21,6 +22,19 @@ class User:
         if self.books_in_possession == None:
             self.books_in_possession = []
         self.books_in_possession.append(book)
+    
+    def delete_book(self, book_title):
+        if self.books_in_possession == None:
+            return
+        indx = 0
+        for x in range(len(self.books_in_possession)):
+            item = self.books_in_possession[indx]
+            if item.title == book_title:
+                self.books_in_possession.pop(indx)
+                indx -= 1
+            indx += 1
+        if self.books_in_possession == []:
+            self.books_in_possession = None
     
     def update_password(self, password):
         # returns boolean: true if password successfully changed, false otherwise
