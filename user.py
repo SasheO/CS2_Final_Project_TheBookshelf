@@ -33,6 +33,8 @@ class User:
                 self.books_in_possession.pop(indx)
                 indx -= 1
             indx += 1
+        if self.books_in_possession == []:
+            self.books_in_possession = None
     
     def update_password(self, password):
         # returns boolean: true if password successfully changed, false otherwise
