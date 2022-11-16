@@ -217,7 +217,7 @@ def my_books(): #NOT TESTED
 
   return jsonify(response)
 
-@app.route("/bookrequest", methods=['GET']) 
+@app.route("/book_request", methods=['GET']) 
 def bookrequest(): 
   response = {'msg': ""} #response given back to the client
 
@@ -250,13 +250,25 @@ def bookrequest():
     response['msg'] = "sorry we do not have your requested book."
   return jsonify(response)
 
-@app.route("/chatrequest", methods=['GET']) 
-def chat_request():
+@app.route("/borrow_request", methods=['GET']) 
+def borrow_request():
   response = {'msg': ""}
 
   data = json.loads(request.data)
 
-  #When the chat rooms are set up, here i would call the method to connect the two users
+'''
+  When the chat rooms are set up, here i would call the method to connect the two users.
+
+  Perhaps have something here that calls the my_request method passing in the username of the user requested. 
+  This sends a borrow request to the requested where they can accept or decline the request.
+  With this method, I wont need to have my_reuest checking periodically for a new request.
+  Because when a request is sent, the method will be called immediately and the request sent.
+'''
+
+@app.route("/my_request", methods=['GET']) 
+def my_request():
+
+  pass
 
 def save_books_to_server():
   '''
