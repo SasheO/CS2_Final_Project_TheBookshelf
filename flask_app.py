@@ -218,7 +218,7 @@ def my_books(): #NOT TESTED
   return jsonify(response)
 
 @app.route("/bookrequest", methods=['GET']) 
-def bookrequest(): ## NOT TESTED
+def bookrequest(): 
   response = {'msg': ""} #response given back to the client
 
   # for testing purposes
@@ -234,10 +234,6 @@ def bookrequest(): ## NOT TESTED
     return jsonify(response)
 
   #check if book requested is in the bookshelf and let the user know if we have the book or not.
-  # file = open('books.pkl','rb') 
-  # books = pickle.load(file) # will load a dictionary containing books on the bookshelf
-  # file.close()
-
   book_title = data['book title'].lower()
   if book_title in BOOKS_IN_SERVER:
     users = []
@@ -253,6 +249,14 @@ def bookrequest(): ## NOT TESTED
   else:
     response['msg'] = "sorry we do not have your requested book."
   return jsonify(response)
+
+@app.route("/chatrequest", methods=['GET']) 
+def chat_request():
+  response = {'msg': ""}
+
+  data = json.loads(request.data)
+
+  #When the chat rooms are set up, here i would call the method to connect the two users
 
 def save_books_to_server():
   '''
