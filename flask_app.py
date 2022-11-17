@@ -3,6 +3,7 @@ import json, pickle
 from book import Book
 from user import User
 from flask_login import LoginManager, login_user, logout_user, current_user, login_required
+import binascii, os
 
 USERS_IN_SERVER = []
 BOOKS_IN_SERVER = {}
@@ -27,6 +28,12 @@ def load_user(user_id): # needed for flask-login session management
     if person.username == user_id:
       return person
 
+def login_required():
+  pass
+
+def generate_key(self):
+    return binascii.hexlify(os.urandom(10)).decode()
+  
 def save_user(user_obj):
   load_users_from_server()
 
@@ -217,6 +224,14 @@ def my_books(): #NOT TESTED
 
   return jsonify(response)
 
+# @login_required
+# login required does not work because session data is not stored, so the user is essentially not logged in.
+@app.route("/my_chats", methods=['GET','POST'])
+def my_chats():
+  pass
+
+# @login_required
+# login required does not work because session data is not stored, so the user is essentially not logged in.
 @app.route("/book_request", methods=['GET']) 
 def bookrequest(): 
   response = {'msg': ""} #response given back to the client
