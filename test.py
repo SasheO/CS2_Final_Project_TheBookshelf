@@ -23,18 +23,18 @@ print(response.json())
 
 #test response if requested book is in server
 book_request_data = {"book title": "Pachinko"}
-response = requests.get(BASE_URL + "bookrequest", json=book_request_data)
+response = requests.get(BASE_URL + "book_request", json=book_request_data)
 print(response)
 print(response.json())
 
 #test response if requested book is not in server
 book_request_data = {"book title": "Little Women"}
-response = requests.get(BASE_URL + "bookrequest", json=book_request_data)
+response = requests.get(BASE_URL + "book_request", json=book_request_data)
 print(response)
 print(response.json())
 
 #test response if user doesn't put 'book title' in the input dictionary
 book_request_data = {"book": "trial"}
-response = requests.get(BASE_URL + "bookrequest", json=book_request_data)
+response = requests.get(BASE_URL + "book_request", json=book_request_data)
 print(response)
 print(response.json())
