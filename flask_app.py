@@ -3,6 +3,7 @@ import json, pickle
 from book import Book
 from user import User
 from flask_login import LoginManager, login_user, logout_user, current_user, login_required
+import binascii, os
 
 USERS_IN_SERVER = []
 BOOKS_IN_SERVER = {}
@@ -27,6 +28,12 @@ def load_user(user_id): # needed for flask-login session management
     if person.username == user_id:
       return person
 
+def login_required():
+  pass
+
+def generate_key(self):
+    return binascii.hexlify(os.urandom(10)).decode()
+  
 def save_user(user_obj):
   load_users_from_server()
 
