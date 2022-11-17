@@ -217,6 +217,12 @@ def my_books(): #NOT TESTED
 
   return jsonify(response)
 
+# @login_required
+# login required does not work because session data is not stored, so the user is essentially not logged in.
+@app.route("/my_chats", methods=['GET','POST'])
+def my_chats():
+  pass
+
 @app.route("/bookrequest", methods=['GET']) #why is this a post and not a get --> I changed it to a get, you're right
 def bookrequest(): ## NOT TESTED
   response = {'msg': ""} #response given back to the client
