@@ -18,7 +18,7 @@ class ChatLinkedList:
     arguments for initialization: 
     usernames: a list of size 2 (for now) containing usernames of the people in the chat
     '''
-    def __init__(self, *usernames):
+    def __init__(self, usernames):
         self.head = None
         self.messengers = usernames # a list of usernames of those in the chat
     

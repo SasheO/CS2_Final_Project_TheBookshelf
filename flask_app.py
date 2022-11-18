@@ -230,15 +230,40 @@ def my_books(): #NOT TESTED
 # login required does not work because session data is not stored, so the user is essentially not logged in.
 @app.route("/my_chats", methods=['GET','POST'])
 def my_chats():
-  response = {'msg': ""} #response given back to the client
+  '''
+  input json: contains a 'username' - username of who is sending the request
+  contains "option" -> "view chats", "view messages", "send messages", are only valid inputs
+    "view chats" returns a list of all the chats you have (represented by the other user's username OR lender_username: Request for book_title)
+    "messages" -> loads latest messages from the chat identified by the "with" input
+
+  contains "with" (only necessary for "view messages" and "send messages" option)
+    "with" -> takes username of who the chat is with
+  '''
+  response = {} #response given back to the client
   data = json.loads(request.data)
   
   username = data['username']
   person = load_user(username)
-
   load_chats_from_server()
 
+
+  option = data['option']
+  if option not in ["view chats", "view messages", "send messages"]:
+    response['msg'] = "invalid option"
+    return response
   
+  if option == "view chats":
+    response['chats'] = str([other_person_in_chat for other_person_in_chat in person.chat_tokens_map.values()])
+    return jsonify(response)
+  
+  chat_with = data['with']
+
+  if option == "view messages":
+    pass
+
+  if option == "send messages":
+    pass
+
 
 @app.route("/bookrequest", methods=['GET']) #why is this a post and not a get --> I changed it to a get, you're right
 def bookrequest(): ## NOT TESTED
