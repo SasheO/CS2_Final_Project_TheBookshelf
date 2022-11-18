@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, session
 import json, pickle
 from book import Book
 from user import User
+from chat import Chat, MessageNode
 from flask_login import LoginManager, login_user, logout_user, current_user, login_required
 import binascii, os
 
@@ -229,7 +230,15 @@ def my_books(): #NOT TESTED
 # login required does not work because session data is not stored, so the user is essentially not logged in.
 @app.route("/my_chats", methods=['GET','POST'])
 def my_chats():
-  pass
+  response = {'msg': ""} #response given back to the client
+  data = json.loads(request.data)
+  
+  username = data['username']
+  person = load_user(username)
+
+  load_chats_from_server()
+
+  
 
 @app.route("/bookrequest", methods=['GET']) #why is this a post and not a get --> I changed it to a get, you're right
 def bookrequest(): ## NOT TESTED

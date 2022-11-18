@@ -5,6 +5,7 @@ class User:
         self.username = username
         self.__password = password
         self.books_in_possession = None
+        self.chat_tokens_map = None
 
     def is_authenticated(): # needed for flask-login, rudimentary hardcoded
         return True 
@@ -48,6 +49,14 @@ class User:
             return True
         return False
 
+    def new_chat(self, chat_token, other_person_in_chat):
+        if self.chat_tokens_map:
+            self.chat_tokens_map[chat_token] = other_person_in_chat
+        else:
+            self.chat_tokens_map = {chat_token: other_person_in_chat}
+
+    def my_chats(self):
+        return self.chat_tokens_map
 
     def __del__(self):
         # should also delete in server
