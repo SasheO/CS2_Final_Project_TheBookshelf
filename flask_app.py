@@ -234,10 +234,13 @@ def my_chats():
   input json: contains a 'username' - username of who is sending the request
   contains "option" -> "view chats", "view messages", "send messages", are only valid inputs
     "view chats" returns a list of all the chats you have (represented by the other user's username OR lender_username: Request for book_title)
-    "messages" -> loads latest messages from the chat identified by the "with" input
+    "view messages" -> loads latest messages from the chat identified by the "with" input
+    "send messages" -> sends message to the chat identified by the "with" input
 
   contains "with" (only necessary for "view messages" and "send messages" option)
     "with" -> takes username of who the chat is with
+  
+  contains "message" (only necessary for "send messages" option) -> takes message the user wants to send
   '''
   response = {} #response given back to the client
   data = json.loads(request.data)
@@ -261,14 +264,28 @@ def my_chats():
   if option == "view messages":
     for token,other_person_in_chat in person.chat_tokens_map.items():
       if other_person_in_chat == chat_with:
-        pass
-        break
+        if token in CHATS_IN_SERVER:
+          # fill in to see until last "seen" message or all five messages?
+          return jsonify(response)
+        else:
+          response['msg'] = "Error occured: Chat not available"
+          return jsonify(response)
 
   if option == "send messages":
+    message = data['message']
+    message_chat = MessageNode(message, username)
     for token,other_person_in_chat in person.chat_tokens_map.items():
       if other_person_in_chat == chat_with:
-        pass
-        break
+        if token in CHATS_IN_SERVER:
+          # fill in
+          CHATS_IN_SERVER[token].add_message(message_chat)
+          save_chats_to_server()
+          return jsonify(response)
+        else:
+          response['msg'] = "Error occured: Chat not saved"
+          return jsonify(response)
+
+    # todo: if a chat with the other person does not exist, create one
 
   return jsonify(response)
 
