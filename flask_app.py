@@ -259,10 +259,18 @@ def my_chats():
   chat_with = data['with']
 
   if option == "view messages":
-    pass
+    for token,other_person_in_chat in person.chat_tokens_map.items():
+      if other_person_in_chat == chat_with:
+        pass
+        break
 
   if option == "send messages":
-    pass
+    for token,other_person_in_chat in person.chat_tokens_map.items():
+      if other_person_in_chat == chat_with:
+        pass
+        break
+
+  return jsonify(response)
 
 
 @app.route("/bookrequest", methods=['GET']) #why is this a post and not a get --> I changed it to a get, you're right
