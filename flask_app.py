@@ -7,6 +7,7 @@ import binascii, os
 
 USERS_IN_SERVER = []
 BOOKS_IN_SERVER = {}
+CHATS_IN_SERVER = {}
 
 app = Flask(__name__)
 
@@ -298,6 +299,26 @@ def load_users_from_server():
   file = open('users.pkl','rb')
   USERS_IN_SERVER = pickle.load(file) # will be load a list of already existing User type objects
   print(USERS_IN_SERVER)
+  file.close()
+
+
+def save_chats_to_server():
+  '''
+  reusable function that saves the user objects in users global variable to the users.pkl file on server
+  '''
+  # Open a file to write bytes
+  p_file = open('chats.pkl', 'wb')
+  # Pickle the list
+  pickle.dump(CHATS_IN_SERVER, p_file)
+  p_file.close()
+
+def load_chats_from_server():
+  '''
+  reusable function that loads a list of user objects to users global variable from the users.pkl file on server
+  '''
+  global CHATS_IN_SERVER
+  file = open('chats.pkl','rb')
+  CHATS_IN_SERVER = pickle.load(file) # will be load a list of already existing User type objects
   file.close()
 
 def password_validity(password):
