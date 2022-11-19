@@ -233,8 +233,8 @@ def my_chats():
   '''
   input json: contains a 'username' - username of who is sending the request
   contains "option" -> "view chats", "view messages", "send messages", are only valid inputs
-    "view chats" returns a list of all the chats you have (represented by the other user's username OR lender_username: Request for book_title)
-    "view messages" -> loads latest messages from the chat identified by the "with" input
+    "view chats" returns a list of all the chats you have showing which ones have unread messages (represented by the other user's username OR lender_username: Request for book_title)
+    "view messages" -> loads all messages from the chat identified by the "with" input
     "send messages" -> sends message to the chat identified by the "with" input
 
   contains "with" (only necessary for "view messages" and "send messages" option)
@@ -256,6 +256,7 @@ def my_chats():
     return response
   
   if option == "view chats":
+    # todo: show if the chats have unread messages or not
     response['chats'] = str([other_person_in_chat for other_person_in_chat in person.chat_tokens_map.values()])
     return jsonify(response)
   
@@ -266,6 +267,7 @@ def my_chats():
       if other_person_in_chat == chat_with:
         if token in CHATS_IN_SERVER:
           # fill in to see until last "seen" message or all five messages?
+          response['chat with '+chat_with] = CHATS_IN_SERVER[token].str_messages()
           return jsonify(response)
         else:
           response['msg'] = "Error occured: Chat not available"
@@ -277,17 +279,14 @@ def my_chats():
     for token,other_person_in_chat in person.chat_tokens_map.items():
       if other_person_in_chat == chat_with:
         if token in CHATS_IN_SERVER:
-          # fill in
           CHATS_IN_SERVER[token].add_message(message_chat)
           save_chats_to_server()
           return jsonify(response)
         else:
           response['msg'] = "Error occured: Chat not saved"
           return jsonify(response)
+    # TODO: if a chat with the other person does not exist, create one
 
-    # todo: if a chat with the other person does not exist, create one
-
-  return jsonify(response)
 
 
 @app.route("/bookrequest", methods=['GET']) #why is this a post and not a get --> I changed it to a get, you're right

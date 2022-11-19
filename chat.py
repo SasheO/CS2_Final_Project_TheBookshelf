@@ -25,3 +25,12 @@ class ChatLinkedList:
     def add_message(self, message):
         message.next = self.head
         self.head = message
+
+    def str_messages(self):
+        # return a list of all string messages
+        messages_string = ''
+        current = self.head
+        while current:
+            messages_str = current.sender + ": " + current.message + "\n" + messages_string
+            current = current.next
+        return messages_string

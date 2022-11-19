@@ -55,9 +55,6 @@ class User:
         else:
             self.chat_tokens_map = {chat_token: other_person_in_chat}
 
-    def my_chats(self):
-        return self.chat_tokens_map
-
     def __del__(self):
         # should also delete in server
         pass 
