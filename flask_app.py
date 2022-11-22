@@ -237,8 +237,8 @@ def bookrequest():
   response = {'msg': ""} #response given back to the client
 
   # for testing purposes
-  load_books_from_server()
-  response['books_in_server'] = str(BOOKS_IN_SERVER)
+  # load_books_from_server()
+  # response['books_in_server'] = str(BOOKS_IN_SERVER)
 
 
   data = json.loads(request.data)
@@ -270,23 +270,33 @@ def borrow_request():
   response = {'msg': ""}
 
   data = json.loads(request.data)
-  lender = data[username]
-  
+  lender = data['username']
+  book_requested = data['book']
+
+  # send the book request to lender so they can accept or reject the request
+  # How do i get the username of the person calling this function to request the book?
+  lender.book_requests(borrower, book_requested)
+
   response['msg'] = "Your book request has been sent to {}".format(lender)
+  return jsonify(response)
 
 '''
-  When the chat rooms are set up, here i would call the method to connect the two users.
-
-  Perhaps have something here that calls the my_request method passing in the username of the user requested. 
-  This sends a borrow request to the requested where they can accept or decline the request.
-  With this method, I wont need to have my_reuest checking periodically for a new request.
-  Because when a request is sent, the method will be called immediately and the request sent.
+  When the chat rooms are set up, we would call the method to connect the two users.
 '''
+ 
+# method to enable user view all their book requests at a glance.
+# Can we set up a notification system for when a request has been made? might be a stretch
+@app.route("/view_requests", methods=['GET']) 
+def view_request():
+  data = json.loads(request.data)
 
-@app.route("/make_request", methods=['GET']) 
-def make_request(username):
+  #I need to get the username of the person calling this method so i can return their requests.
+  
+  return 
 
-  pass
+
+#TODO: create method to enable user set the borrower for a specific book to true.
+
 
 def save_books_to_server():
   '''

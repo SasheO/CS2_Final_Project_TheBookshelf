@@ -5,7 +5,7 @@ class User:
         self.username = username
         self.__password = password
         self.books_in_possession = None
-        self.my_requests = {}
+        self.my_requests = {}   #TODO: Is this something i need ot save in a file so we don't loose each users data
 
     def is_authenticated(): # needed for flask-login, rudimentary hardcoded
         return True 
