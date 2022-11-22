@@ -270,6 +270,9 @@ def borrow_request():
   response = {'msg': ""}
 
   data = json.loads(request.data)
+  lender = data[username]
+  
+  response['msg'] = "Your book request has been sent to {}".format(lender)
 
 '''
   When the chat rooms are set up, here i would call the method to connect the two users.
@@ -280,8 +283,8 @@ def borrow_request():
   Because when a request is sent, the method will be called immediately and the request sent.
 '''
 
-@app.route("/my_request", methods=['GET']) 
-def my_request():
+@app.route("/make_request", methods=['GET']) 
+def make_request(username):
 
   pass
 

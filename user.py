@@ -5,6 +5,7 @@ class User:
         self.username = username
         self.__password = password
         self.books_in_possession = None
+        self.my_requests = {}
 
     def is_authenticated(): # needed for flask-login, rudimentary hardcoded
         return True 
@@ -47,6 +48,24 @@ class User:
         if self.__password == password_entered:
             return True
         return False
+
+    def book_requests(self, borrower, book):    #a dictionary containing all the book requests the user has gotten
+        #NOT TESTED
+        '''
+        It stores the book requested as the key of the dictionary.
+        Each book maps to another dictionary containing all the requests for a specific book 
+        received form various users.
+        It also contains a boolean you can set to true to indicate that you want to borrow the book out.
+        '''
+        if book not in self.myrequests:
+            self.my_requests[book] ={}
+        requests_count = 1
+        for value in range(0,len(self.myrequests), step=2):
+            requests_count += 1
+        username = 'borrower' + str(requests_count)
+        lend = 'Lend to user' + str(requests_count)
+        self.my_requests[book][username] = borrower
+        self.my_requests[book][lend] = False
 
 
     def __del__(self):
