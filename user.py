@@ -1,11 +1,11 @@
 from book import Book
+from flask_app import save_book_requests_to_server, load_book_requests_from_server
 class User:
     def __init__(self, username, password):
         # should also save user in server
         self.username = username
         self.__password = password
         self.books_in_possession = None
-        self.my_requests = {}   #TODO: Is this something i need ot save in a file so we don't loose each users data
 
     def is_authenticated(): # needed for flask-login, rudimentary hardcoded
         return True 
@@ -50,22 +50,31 @@ class User:
         return False
 
     def book_requests(self, borrower, book):    #a dictionary containing all the book requests the user has gotten
+        #How do i store the created dictionary in the pkl file book_requests?
+        #and how do I initialise the users requests dictionary as the dictionary in the pkl file?
         #NOT TESTED
         '''
-        It stores the book requested as the key of the dictionary.
-        Each book maps to another dictionary containing all the requests for a specific book 
-        received form various users.
-        It also contains a boolean you can set to true to indicate that you want to borrow the book out.
+        It stores the name of the user as the key of the dictionary.
+        Each user is mapped to another dictionary containing the book titles 
+        and the users that have requested too borrow the book
+        It also contains a boolean you can set to true to indicate that you want to 
+        borrow the book out to a specific user
         '''
-        if book not in self.myrequests:
-            self.my_requests[book] ={}
+        BOOK_REQUESTS = {}
+        load_book_requests_from_server()
+
+        if self.username not in BOOK_REQUESTS:
+            BOOK_REQUESTS[self.username] = {}
+        if book not in BOOK_REQUESTS[self.username]:
+            BOOK_REQUESTS[self.username][book] ={}
+
         requests_count = 1
-        for value in range(0,len(self.myrequests), step=2):
+        for value in range(0,len(BOOK_REQUESTS[self.username][book]), step=2):
             requests_count += 1
-        username = 'borrower' + str(requests_count)
-        lend = 'Lend to user' + str(requests_count)
-        self.my_requests[book][username] = borrower
-        self.my_requests[book][lend] = False
+        # borrower_count = 'borrower ' + str(requests_count)
+        BOOK_REQUESTS[self.username][book][borrower] = False
+
+        save_book_requests_to_server()
 
 
     def __del__(self):

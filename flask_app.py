@@ -7,6 +7,8 @@ import binascii, os
 
 USERS_IN_SERVER = []
 BOOKS_IN_SERVER = {}
+BOOK_REQUESTS = {}
+
 
 app = Flask(__name__)
 
@@ -249,7 +251,7 @@ def bookrequest():
     return jsonify(response)
 
   #check if book requested is in the bookshelf and let the user know if we have the book or not.
-  book_title = data['book title'].lower()
+  book_title = data['book_title'].lower()
   if book_title in BOOKS_IN_SERVER:
     users = []
     response['msg'] = f'''
@@ -265,37 +267,56 @@ def bookrequest():
     response['msg'] = "sorry we do not have your requested book."
   return jsonify(response)
 
+# method to send the book request to lender so they can accept or reject the request
 @app.route("/borrow_request", methods=['GET']) 
 def borrow_request():
+  '''
+  When the chat rooms are set up, we would call the method to connect the two users in this method.
+  '''
   response = {'msg': ""}
 
   data = json.loads(request.data)
-  lender = data['username']
+  lender = data['lender username']
   book_requested = data['book']
+  borrower = data['borrower username']
 
-  # send the book request to lender so they can accept or reject the request
   # How do i get the username of the person calling this function to request the book?
   lender.book_requests(borrower, book_requested)
 
   response['msg'] = "Your book request has been sent to {}".format(lender)
   return jsonify(response)
 
-'''
-  When the chat rooms are set up, we would call the method to connect the two users.
-'''
+
  
 # method to enable user view all their book requests at a glance.
-# Can we set up a notification system for when a request has been made? might be a stretch
-@app.route("/view_requests", methods=['GET']) 
-def view_request():
+# NOT TESTED
+@app.route("/view_my_requests", methods=['GET']) 
+def view_my_requests():
+
   data = json.loads(request.data)
+  lender = data['lender username']
+  load_book_requests_from_server()
 
   #I need to get the username of the person calling this method so i can return their requests.
+  #is this something that would be handled by the log in feature? like i can use the name of the person logged in
   
-  return 
+  return jsonify("Here are all the borrow requests you have {}".format(BOOK_REQUESTS[lender]))
 
+# method to grant book request for a borrower
+# NOT TESTED
+# the same problem of how to get the user name of the person calling this method
+@app.route("/grant _book_request", methods=['GET']) 
+def grant_book_request():
+  
+  load_book_requests_from_server()
+  data = json.loads(request.data)
+  book = data['book']
+  borrower = data['borrower username']
+  lender = data['lender username']
+  BOOK_REQUESTS[lender][book][borrower] = True
+  save_book_requests_to_server()
 
-#TODO: create method to enable user set the borrower for a specific book to true.
+  return jsonify("You have successfully lent {} out to {}".format(book, borrower))
 
 
 def save_books_to_server():
@@ -335,6 +356,24 @@ def load_users_from_server():
   file = open('users.pkl','rb')
   USERS_IN_SERVER = pickle.load(file) # will be load a list of already existing User type objects
   print(USERS_IN_SERVER)
+  file.close()
+
+def save_book_requests_to_server():
+  '''
+  reusable function that saves the book_requests dictionary type in book_requests global variable to the book_requests.pkl file on server
+  '''
+  p_file = open('book_requests.pkl', 'wb')
+  pickle.dump(BOOK_REQUESTS, p_file)
+  p_file.close()
+
+def load_book_requests_from_server():
+  '''
+  reusable function that loads the reuests in the book_requests.pkl file to book_requests global variable as a dictionary type
+  '''
+  global BOOK_REQUESTS
+
+  file = open('book_requests.pkl','rb')
+  BOOK_REQUESTS = pickle.load(file) # will be load a dict of already existing book requests with the lenders username as keys
   file.close()
 
 def password_validity(password):
