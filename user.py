@@ -4,7 +4,7 @@ class User:
         # should also save user in server
         self.username = username
         self.__password = password
-        self.books_in_possession = None
+        self.books_in_possession = None # lisy book objects, not title
         self.chat_tokens_map = None
 
     def is_authenticated(): # needed for flask-login, rudimentary hardcoded
@@ -19,7 +19,7 @@ class User:
     def is_anonymous(): # needed for flask-login, rudimentary hardcoded
         return False
 
-    def add_book(self, book):
+    def add_book(self, book): # add book objects, not title
         if self.books_in_possession == None:
             self.books_in_possession = []
         self.books_in_possession.append(book)
