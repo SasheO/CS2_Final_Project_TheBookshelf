@@ -7,7 +7,6 @@ import binascii, os
 
 USERS_IN_SERVER = []
 BOOKS_IN_SERVER = {}
-BOOK_REQUESTS = {}
 
 
 app = Flask(__name__)
@@ -29,6 +28,15 @@ def load_user(user_id): # needed for flask-login session management
   for person in users:
     if person.username == user_id:
       return person
+
+def load_book(book_title):
+  file = open('books.pkl', 'rb')
+  books = pickle.load(file)
+  file.close()
+
+  for book in books:
+    if book.title == book_title:
+      return book
 
 def login_required():
   pass
@@ -267,57 +275,76 @@ def bookrequest():
     response['msg'] = "sorry we do not have your requested book."
   return jsonify(response)
 
-# method to send the book request to lender so they can accept or reject the request
-@app.route("/borrow_request", methods=['GET']) 
-def borrow_request():
+  # Not Tested
   '''
-  When the chat rooms are set up, we would call the method to connect the two users in this method.
+  This function enables the user to make a book request to another user known as the lender
+  format of input: data = {
+    "lender username" : name of the user the book will be requested from
+    "book" : book title requested
+    "borrower username" : name of person intending to borrow the book
+    } 
   '''
-  response = {'msg': ""}
+  @app.route("/borrow_request", methods=['GET']) 
+  def borrow_request():
 
-  data = json.loads(request.data)
-  lender = data['lender username']
-  book_requested = data['book']
-  borrower = data['borrower username']
+    data = json.loads(request.data)
+    lender = load_user(data['lender username'])
+    book_requested = data['book']
+    borrower = data['borrower username']
 
-  # How do i get the username of the person calling this function to request the book?
-  lender.book_requests(borrower, book_requested)
+    for book in lender.books_in_possession:
+      if book.title == book_requested:
+        book.people_who_have_requested[borrower] = False
 
-  response['msg'] = "Your book request has been sent to {}".format(lender)
-  return jsonify(response)
+    return jsonify("Your book request has been sent to {}".format(lender))
 
+  # Not Tested
+  '''
+  This function enables the user (known as lender in this case) to view all book requests made to him/her
+  format of input: data = {"lender username" : " ",}
+  '''
+  @app.route("/view_my_requests", methods=['GET']) 
+  def view_my_requests():
+    data = json.loads(request.data)
+    lender = load_user(data['lender username'])
+    borrow_requests = {}
 
- 
-# method to enable user view all their book requests at a glance.
-# NOT TESTED
-@app.route("/view_my_requests", methods=['GET']) 
-def view_my_requests():
+    for book in lender.books_in_possession:
+      borrow_requests[book.title] = book.people_who_have_requested
 
-  data = json.loads(request.data)
-  lender = data['lender username']
-  load_book_requests_from_server()
+    return jsonify("Here are all the borrow requests you have {}".format(borrow_requests))
 
-  #I need to get the username of the person calling this method so i can return their requests.
-  #is this something that would be handled by the log in feature? like i can use the name of the person logged in
-  
-  return jsonify("Here are all the borrow requests you have {}".format(BOOK_REQUESTS[lender]))
+  # Not Tested
+  '''
+  This function enables the user (lender) to grant a book request to user that requested (borrower)
+  format of input: data = {
+    "lender username" : name of the user granting the book request
+    "book" : book title requested
+    "borrower username" : name of person to borrow to
+    "decision" : True indicating that you want to borrow the book out or False indicating otherwise
+    } 
+  '''
+  @app.route("/grant _book_request", methods=['GET']) 
+  def grant_book_request():
+    data = json.loads(request.data)
+    lender = load_user(data['lender username'])
+    book_requested = load_book(data['book'])
+    borrower = data['borrower username']
+    lend_book_out = data['decision']
 
-# method to grant book request for a borrower
-# NOT TESTED
-# the same problem of how to get the user name of the person calling this method
-@app.route("/grant _book_request", methods=['GET']) 
-def grant_book_request():
-  
-  load_book_requests_from_server()
-  data = json.loads(request.data)
-  book = data['book']
-  borrower = data['borrower username']
-  lender = data['lender username']
-  BOOK_REQUESTS[lender][book][borrower] = True
-  save_book_requests_to_server()
+    for book in lender.books_in_possession:
+      if book == book_requested:
+        if lend_book_out == True and book.available_for_lending == True:
+          book_requested.people_who_have_requested[borrower] = True
+          book.available_for_lending = False
+          return jsonify("You have successfully lent {} out to {}".format(book_requested, borrower))
 
-  return jsonify("You have successfully lent {} out to {}".format(book, borrower))
+        elif book.available_for_lending == False:
+          return jsonify("You have already lent this book out to someone else.")
 
+        else:
+          book_requested.people_who_have_requested.pop(borrower)
+          return jsonify("You have denied {} access to your book {}".format(borrower, book_requested))
 
 def save_books_to_server():
   '''
@@ -357,6 +384,7 @@ def load_users_from_server():
   USERS_IN_SERVER = pickle.load(file) # will be load a list of already existing User type objects
   print(USERS_IN_SERVER)
   file.close()
+
 
 def save_book_requests_to_server():
   '''
