@@ -385,25 +385,6 @@ def load_users_from_server():
   print(USERS_IN_SERVER)
   file.close()
 
-
-def save_book_requests_to_server():
-  '''
-  reusable function that saves the book_requests dictionary type in book_requests global variable to the book_requests.pkl file on server
-  '''
-  p_file = open('book_requests.pkl', 'wb')
-  pickle.dump(BOOK_REQUESTS, p_file)
-  p_file.close()
-
-def load_book_requests_from_server():
-  '''
-  reusable function that loads the reuests in the book_requests.pkl file to book_requests global variable as a dictionary type
-  '''
-  global BOOK_REQUESTS
-
-  file = open('book_requests.pkl','rb')
-  BOOK_REQUESTS = pickle.load(file) # will be load a dict of already existing book requests with the lenders username as keys
-  file.close()
-
 def password_validity(password):
   repsonse_message = ""
   l, u, p, d = 0, 0, 0, 0
