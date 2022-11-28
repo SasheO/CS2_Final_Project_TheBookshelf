@@ -2,6 +2,7 @@ import requests
 
 user_name = 'msmmiso'
 password = "CompledPassword5@"
+book_owned = 'Food Recipes'
 # password = "Testuser4"
 
 BASE_URL = "https://thebookshelf.pythonanywhere.com/"
@@ -36,5 +37,13 @@ print(response.json())
 #test response if user doesn't put 'book title' in the input dictionary
 book_request_data = {"book": "trial"}
 response = requests.get(BASE_URL + "book_request", json=book_request_data)
+print(response)
+print(response.json())
+
+#test borrower making borrow request
+borrow_request_data = {"lender username" : user_name,
+    "book" : 'Food Recipes',
+    "borrower username" : 'mimmiso' }
+response = requests.get(BASE_URL + "borrow_request", json=borrow_request_data)
 print(response)
 print(response.json())

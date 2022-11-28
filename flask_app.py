@@ -262,7 +262,7 @@ def bookrequest():
   return jsonify(response)
 
   
-# Not Tested
+
 '''
 This function enables the user to make a book request to another user known as the lender
 format of input: data = {
@@ -273,17 +273,19 @@ format of input: data = {
 '''
 @app.route("/borrow_request", methods=['GET']) 
 def borrow_request():
+  response = {'msg':""}
 
   data = json.loads(request.data)
   lender = load_user(data['lender username'])
   book_requested = data['book']
   borrower = data['borrower username']
 
-  for book in lender.books_in_possession:
-    if book.title == book_requested:
-      book.people_who_have_requested[borrower] = False
+  for book_ in lender.books_in_possession:
+    if book_.title == book_requested:
+      book_.people_who_have_requested[borrower] = False
 
-  return jsonify("Your book request has been sent to {}".format(lender))
+  response['msg'] = "Your book request has been sent to {}".format(lender.username)
+  return jsonify(response)
 
 # Not Tested
 '''
