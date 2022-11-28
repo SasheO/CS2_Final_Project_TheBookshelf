@@ -19,10 +19,10 @@ class User:
     def is_anonymous(): # needed for flask-login, rudimentary hardcoded
         return False
 
-    def add_book(self, book): # add book objects, not title
+    def add_book(self, _book): # add book objects, not title
         if self.books_in_possession == None:
             self.books_in_possession = []
-        self.books_in_possession.append(book)
+        self.books_in_possession.append(_book)
     
     def delete_book(self, book_title):
         if self.books_in_possession == None:
