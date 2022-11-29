@@ -261,7 +261,8 @@ def bookrequest():
 
   return jsonify(response)
 
-@app.route("/borrow_request", methods=['GET']) 
+
+@app.route("/borrow_request", methods=['GET'])
 def borrow_request():
   '''
   This function enables the user to make a book request to another user known as the lender
@@ -269,34 +270,36 @@ def borrow_request():
     "lender username" : name of the user the book will be requested from
     "book" : book title requested
     "borrower username" : name of person intending to borrow the book
-    } 
-    returns a string
+    }
   '''
-
   data = json.loads(request.data)
   lender = load_user(data['lender username'])
   book_requested = data['book']
   borrower = data['borrower username']
 
+  load_users_from_server()  #update the USERS_IN_SERVER to have the latest data stored
+
   for book_ in lender.books_in_possession:
-    if book_.title == book_requested:
+    if book_.title.lower() == book_requested.lower():
       book_.people_who_have_requested[borrower] = False
+      save_user(lender)     #save the changes made to the user in USERS_IN_SERVER
+      save_users_to_server()    #save changes made in USERS_IN_SERVER to the database
+      return jsonify("Your book request has been sent to {}".format(lender.username))
 
-  return jsonify("Your book request has been sent to {}".format(lender.username))
+  return jsonify("Your book request was not found")
 
-# Not Tested
-'''
-This function enables the user (known as lender in this case) to view all book requests made to him/her
-format of input: data = {"lender username" : " ",}
-'''
-@app.route("/view_my_requests", methods=['GET']) 
+@app.route("/view_my_requests", methods=['GET'])
 def view_my_requests():
+  '''
+  This function enables the user (known as lender in this case) to view all book requests made to him/her
+  format of input: data = {"lender username" : " ",}
+  '''
   data = json.loads(request.data)
   lender = load_user(data['lender username'])
   borrow_requests = {}
 
-  for book in lender.books_in_possession:
-    borrow_requests[book.title] = book.people_who_have_requested
+  for book_ in lender.books_in_possession:
+    borrow_requests[book_.title] = book_.people_who_have_requested
 
   return jsonify("Here are all the borrow requests you have {}".format(borrow_requests))
 

@@ -47,3 +47,9 @@ borrow_request_data = {"lender username" : user_name,
 response = requests.get(BASE_URL + "borrow_request", json=borrow_request_data)
 print(response)
 print(response.json())
+
+#test lender viewing all their book requests
+view_my_requests_data = {"lender username" : user_name}
+response = requests.get(BASE_URL + "view_my_requests", json=view_my_requests_data)
+print(response)
+print(response.json())
