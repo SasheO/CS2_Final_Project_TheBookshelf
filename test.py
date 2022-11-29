@@ -65,8 +65,20 @@ response = requests.get(BASE_URL + "grant_book_request", json=grant_book_request
 print(response)
 print(response.json())
 
+# test user viewing all their chats
+my_chats_data = {"username": user_name, "option": "view chats"}
+response = requests.get(BASE_URL + "my_chats", json=my_chats_data)
+print(response)
+print(response.json())
+
+# test user viewing chat message in specific chat
+my_chats_data = {"username": user_name, "option": "send messages", "with": "Sashe", "message": "Sure, do you live around DC? We can meet up at a cafe to exchange books ;)"}
+response = requests.get(BASE_URL + "my_chats", json=my_chats_data)
+print(response)
+print(response.json())
+
 # test user sending chat message to other user
-my_chats_data = {"username": user_name, "option": "view messages", "with": "Sashe", "message": "Sure, do you live around DC? We can meet up at a cafe to exchange books ;)"}
+my_chats_data = {"username": user_name, "option": "send messages", "with": "Sashe", "message": "Sure, do you live around DC? We can meet up at a cafe to exchange books ;)"}
 response = requests.get(BASE_URL + "my_chats", json=my_chats_data)
 print(response)
 print(response.json())
