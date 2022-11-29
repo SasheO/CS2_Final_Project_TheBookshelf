@@ -278,7 +278,7 @@ def borrow_request():
   borrower = data['borrower username']
 
   load_users_from_server()  #update the USERS_IN_SERVER to have the latest data stored
-
+  
   for book_ in lender.books_in_possession:
     if book_.title.lower() == book_requested.lower():
       book_.people_who_have_requested[borrower] = False
@@ -303,37 +303,46 @@ def view_my_requests():
 
   return jsonify("Here are all the borrow requests you have {}".format(borrow_requests))
 
-# Not Tested
-'''
-This function enables the user (lender) to grant a book request to user that requested (borrower)
-format of input: data = {
-  "lender username" : name of the user granting the book request
-  "book" : book title requested
-  "borrower username" : name of person to borrow to
-  "decision" : True indicating that you want to borrow the book out or False indicating otherwise
-  } 
-'''
-@app.route("/grant _book_request", methods=['GET']) 
+@app.route("/grant_book_request", methods=['GET'])
 def grant_book_request():
+  '''
+  This function enables the user (lender) to grant a book request to user that requested (borrower)
+  format of input: data = {
+    "lender username" : name of the user granting the book request
+    "book" : book title requested
+    "borrower username" : name of person to borrow to
+    "decision" : True indicating that you want to borrow the book out or False indicating otherwise
+    }
+  '''
   data = json.loads(request.data)
   lender = load_user(data['lender username'])
-  book_requested = load_book(data['book'])
+  book_requested = data['book']
   borrower = data['borrower username']
   lend_book_out = data['decision']
 
-  for book in lender.books_in_possession:
-    if book == book_requested:
-      if lend_book_out == True and book.available_for_lending == True:
-        book_requested.people_who_have_requested[borrower] = True
-        book.available_for_lending = False
+  load_users_from_server()
+
+  for book_ in lender.books_in_possession:
+    if book_.title.lower() == book_requested.lower():
+      if lend_book_out == True and book_.available_for_lending == True:
+        book_.people_who_have_requested[borrower] = True
+        book_.available_for_lending = False
+
+        save_user(lender)
+        save_users_to_server()
+
         return jsonify("You have successfully lent {} out to {}".format(book_requested, borrower))
 
-      elif book.available_for_lending == False:
+      elif lend_book_out == True and book_.available_for_lending == False:
+        save_user(lender)
+        save_users_to_server()
         return jsonify("You have already lent this book out to someone else.")
 
       else:
-        book_requested.people_who_have_requested.pop(borrower)
-        return jsonify("You have denied {} access to your book {}".format(borrower, book_requested))
+        book_.people_who_have_requested.pop(borrower)
+        save_user(lender)
+        save_users_to_server()
+        return jsonify("You have denied {} access to your book: {}".format(borrower, book_requested))
 
 def save_books_to_server():
   '''
