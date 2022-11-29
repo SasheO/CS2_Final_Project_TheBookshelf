@@ -40,7 +40,7 @@ def load_book(book_title):
     if book.title == book_title:
       return book
 
-def generate_key(self):
+def generate_key():
     return binascii.hexlify(os.urandom(10)).decode()
   
 def save_user(user_obj):
@@ -334,13 +334,18 @@ def borrow_request():
   data = json.loads(request.data)
   lender = load_user(data['lender username'])
   book_requested = data['book']
-  borrower = data['borrower username']
+  borrower_username = data['borrower username']
 
   load_users_from_server()  #update the USERS_IN_SERVER to have the latest data stored
   
   for book_ in lender.books_in_possession:
     if book_.title.lower() == book_requested.lower():
-      book_.people_who_have_requested[borrower] = False
+      book_.people_who_have_requested[borrower_username] = False
+      new_chat_token = generate_key()
+      lender.new_chat(new_chat_token, borrower_username)
+      borrower = load_user(borrower_username)
+      borrower.new_chat(new_chat_token, lender.username)
+      save_user(borrower)
       save_user(lender)     #save the changes made to the user in USERS_IN_SERVER
       save_users_to_server()    #save changes made in USERS_IN_SERVER to the database
       return jsonify("Your book request has been sent to {}".format(lender.username))
