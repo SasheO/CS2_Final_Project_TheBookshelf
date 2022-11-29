@@ -49,6 +49,7 @@ class User:
             return True
         return False
 
+
     def new_chat(self, chat_token, other_person_in_chat):
         if self.chat_tokens_map:
             self.chat_tokens_map[chat_token] = other_person_in_chat
