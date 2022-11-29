@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify, session
 import json, pickle
 from book import Book
 from user import User
-from chat import Chat, MessageNode
+from chat import ChatLinkedList, MessageNode
 from flask_login import LoginManager, login_user, logout_user, current_user, login_required
 import binascii, os
 
@@ -40,9 +40,9 @@ def load_book(book_title):
     if book.title == book_title:
       return book
 
-def generate_key(self):
+def generate_key():
     return binascii.hexlify(os.urandom(10)).decode()
-  
+
 def save_user(user_obj):
   load_users_from_server()
 
@@ -84,7 +84,6 @@ def login():
       if person.login_check_password(password):
         if login_user(person):
             response['msg'] = f"welcome back, {current_user.username}"
-            response["session"] = str(session)
             return jsonify(response)
         else:
             response['msg'] = "login failed"
@@ -246,12 +245,12 @@ def my_chats():
 
   contains "with" (only necessary for "view messages" and "send messages" option)
     "with" -> takes username of who the chat is with
-  
+
   contains "message" (only necessary for "send messages" option) -> takes message the user wants to send
   '''
   response = {} #response given back to the client
   data = json.loads(request.data)
-  
+
   username = data['username']
   person = load_user(username)
   load_chats_from_server()
@@ -260,46 +259,67 @@ def my_chats():
   option = data['option']
   if option not in ["view chats", "view messages", "send messages"]:
     response['msg'] = "invalid option"
-    return response
-  
+    return jsonify(response)
+
   if option == "view chats":
     # todo: show if the chats have unread messages or not
-    response['chats'] = str([other_person_in_chat for other_person_in_chat in person.chat_tokens_map.values()])
+    if person.chat_tokens_map:
+      response['chats'] = str([other_person_in_chat for other_person_in_chat in person.chat_tokens_map.values()])
+    else:
+      response['msg'] = "You have no chats"
+      return response
     return jsonify(response)
-  
+
   chat_with = data['with']
 
   if option == "view messages":
-    for token,other_person_in_chat in person.chat_tokens_map.items():
-      if other_person_in_chat == chat_with:
-        if token in CHATS_IN_SERVER:
-          # fill in to see until last "seen" message or all five messages?
-          response['chat with '+chat_with] = CHATS_IN_SERVER[token].str_messages()
-          return jsonify(response)
-        else:
-          response['msg'] = "Error occured: Chat not available"
-          return jsonify(response)
+    if person.chat_tokens_map:
+      for token,other_person_in_chat in person.chat_tokens_map.items():
+        if other_person_in_chat == chat_with:
+          if token in CHATS_IN_SERVER:
+            # fill in to see until last "seen" message or all five messages?
+            response['chat with '+chat_with] = CHATS_IN_SERVER[token].str_messages()
+            return jsonify(response)
+          else:
+            response['msg'] = "Error occured: Chat not available"
+            return jsonify(response)
+      response['msg'] = "No chat found with this person"
+      return jsonify(response)
+    else:
+      response['msg'] = "You have no chats"
+      return response
+
 
   if option == "send messages":
     message = data['message']
     message_chat = MessageNode(message, username)
-    for token,other_person_in_chat in person.chat_tokens_map.items():
-      if other_person_in_chat == chat_with:
-        if token in CHATS_IN_SERVER:
-          CHATS_IN_SERVER[token].add_message(message_chat)
-          save_chats_to_server()
-          return jsonify(response)
-        else:
-          response['msg'] = "Error occured: Chat not saved"
-          return jsonify(response)
+    if person.chat_tokens_map:
+
+      for token,other_person_in_chat in person.chat_tokens_map.items():
+        if other_person_in_chat == chat_with:
+          if token in CHATS_IN_SERVER:
+            CHATS_IN_SERVER[token].add_message(message_chat)
+            save_chats_to_server()
+            response['chat with '+chat_with] = CHATS_IN_SERVER[token].str_messages()
+            return jsonify(response)
+          else:
+            response['msg'] = "Error occured: Chat not saved"
+            return jsonify(response)
+      response['msg'] = "No chat found with this person"
+      return jsonify(response)
+    else:
+      response['msg'] = "You have no chats"
+      return response
+
+
     # TODO: if a chat with the other person does not exist, create one
 
 
 
 # @login_required
 # login required does not work because session data is not stored, so the user is essentially not logged in.
-@app.route("/book_request", methods=['GET']) 
-def bookrequest(): 
+@app.route("/book_request", methods=['GET'])
+def bookrequest():
   response = {'msg': ""}
 
   data = json.loads(request.data)
@@ -331,21 +351,42 @@ def borrow_request():
     "borrower username" : name of person intending to borrow the book
     }
   '''
+  response = {}
   data = json.loads(request.data)
   lender = load_user(data['lender username'])
   book_requested = data['book']
-  borrower = data['borrower username']
+  borrower_username = data['borrower username']
+  borrower = load_user(borrower_username)
 
   load_users_from_server()  #update the USERS_IN_SERVER to have the latest data stored
-  
+
   for book_ in lender.books_in_possession:
     if book_.title.lower() == book_requested.lower():
-      book_.people_who_have_requested[borrower] = False
+      book_.people_who_have_requested[borrower_username] = False
+      
+      create_new_chat = True
+      if borrower.chat_tokens_map:
+        if lender.username in borrower.chat_tokens_map.values():
+          create_new_chat = False
+
+      if create_new_chat:
+        load_chats_from_server()
+        new_chat_token = generate_key()
+        lender.new_chat(new_chat_token, borrower_username)
+        borrower.new_chat(new_chat_token, lender.username)
+        new_chat = ChatLinkedList([borrower_username, lender.username])
+        CHATS_IN_SERVER[new_chat_token] = new_chat
+        save_chats_to_server()
+      
+      save_user(borrower)
+      save_users_to_server()
       save_user(lender)     #save the changes made to the user in USERS_IN_SERVER
       save_users_to_server()    #save changes made in USERS_IN_SERVER to the database
-      return jsonify("Your book request has been sent to {}".format(lender.username))
-
-  return jsonify("Your book request was not found")
+      response["msg"] = "Your book request has been sent to {}! Chat with them to arrange the logistics...".format(lender.username)
+      return jsonify(response)
+  
+  response["msg"] = "Your book request was not found"
+  return jsonify(response)
 
 @app.route("/view_my_requests", methods=['GET'])
 def view_my_requests():
