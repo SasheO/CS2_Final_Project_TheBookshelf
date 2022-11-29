@@ -1,8 +1,8 @@
 import requests
 
-user_name = 'msmmiso'
-password = "CompledPassword5@"
-book_owned = 'Food Recipes'
+user_name = 'Elei'
+password = "ComplexPassword@2022"
+book_owned = 'Food Recipe'
 # password = "Testuser4"
 
 BASE_URL = "https://thebookshelf.pythonanywhere.com/"
@@ -62,5 +62,11 @@ grant_book_request_data = {
   "decision" : False 
   } 
 response = requests.get(BASE_URL + "grant_book_request", json=grant_book_request_data)
+print(response)
+print(response.json())
+
+# test user sending chat message to other user
+my_chats_data = {"username": user_name, "option": "view messages", "with": "Sashe", "message": "Sure, do you live around DC? We can meet up at a cafe to exchange books ;)"}
+response = requests.get(BASE_URL + "my_chats", json=my_chats_data)
 print(response)
 print(response.json())

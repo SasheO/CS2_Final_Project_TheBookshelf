@@ -283,6 +283,8 @@ def my_chats():
           else:
             response['msg'] = "Error occured: Chat not available"
             return jsonify(response)
+      response['msg'] = "No chat found with this person"
+      return jsonify(response)
     else:
       response['msg'] = "You have no chats"
       return response
@@ -302,6 +304,8 @@ def my_chats():
           else:
             response['msg'] = "Error occured: Chat not saved"
             return jsonify(response)
+      response['msg'] = "No chat found with this person"
+      return jsonify(response)
     else:
       response['msg'] = "You have no chats"
       return response
