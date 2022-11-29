@@ -2,11 +2,13 @@ from flask import Flask, request, jsonify, session
 import json, pickle
 from book import Book
 from user import User
+from chat import Chat, MessageNode
 from flask_login import LoginManager, login_user, logout_user, current_user, login_required
 import binascii, os
 
 USERS_IN_SERVER = []
 BOOKS_IN_SERVER = {}
+CHATS_IN_SERVER = {}
 
 
 app = Flask(__name__)
@@ -235,7 +237,64 @@ def my_books(): #NOT TESTED
 # login required does not work because session data is not stored, so the user is essentially not logged in.
 @app.route("/my_chats", methods=['GET','POST'])
 def my_chats():
-  pass
+  '''
+  input json: contains a 'username' - username of who is sending the request
+  contains "option" -> "view chats", "view messages", "send messages", are only valid inputs
+    "view chats" returns a list of all the chats you have showing which ones have unread messages (represented by the other user's username OR lender_username: Request for book_title)
+    "view messages" -> loads all messages from the chat identified by the "with" input
+    "send messages" -> sends message to the chat identified by the "with" input
+
+  contains "with" (only necessary for "view messages" and "send messages" option)
+    "with" -> takes username of who the chat is with
+  
+  contains "message" (only necessary for "send messages" option) -> takes message the user wants to send
+  '''
+  response = {} #response given back to the client
+  data = json.loads(request.data)
+  
+  username = data['username']
+  person = load_user(username)
+  load_chats_from_server()
+
+
+  option = data['option']
+  if option not in ["view chats", "view messages", "send messages"]:
+    response['msg'] = "invalid option"
+    return response
+  
+  if option == "view chats":
+    # todo: show if the chats have unread messages or not
+    response['chats'] = str([other_person_in_chat for other_person_in_chat in person.chat_tokens_map.values()])
+    return jsonify(response)
+  
+  chat_with = data['with']
+
+  if option == "view messages":
+    for token,other_person_in_chat in person.chat_tokens_map.items():
+      if other_person_in_chat == chat_with:
+        if token in CHATS_IN_SERVER:
+          # fill in to see until last "seen" message or all five messages?
+          response['chat with '+chat_with] = CHATS_IN_SERVER[token].str_messages()
+          return jsonify(response)
+        else:
+          response['msg'] = "Error occured: Chat not available"
+          return jsonify(response)
+
+  if option == "send messages":
+    message = data['message']
+    message_chat = MessageNode(message, username)
+    for token,other_person_in_chat in person.chat_tokens_map.items():
+      if other_person_in_chat == chat_with:
+        if token in CHATS_IN_SERVER:
+          CHATS_IN_SERVER[token].add_message(message_chat)
+          save_chats_to_server()
+          return jsonify(response)
+        else:
+          response['msg'] = "Error occured: Chat not saved"
+          return jsonify(response)
+    # TODO: if a chat with the other person does not exist, create one
+
+
 
 # @login_required
 # login required does not work because session data is not stored, so the user is essentially not logged in.
@@ -381,6 +440,26 @@ def load_users_from_server():
   file = open('users.pkl','rb')
   USERS_IN_SERVER = pickle.load(file) # will be load a list of already existing User type objects
   print(USERS_IN_SERVER)
+  file.close()
+
+
+def save_chats_to_server():
+  '''
+  reusable function that saves the user objects in users global variable to the users.pkl file on server
+  '''
+  # Open a file to write bytes
+  p_file = open('chats.pkl', 'wb')
+  # Pickle the list
+  pickle.dump(CHATS_IN_SERVER, p_file)
+  p_file.close()
+
+def load_chats_from_server():
+  '''
+  reusable function that loads a list of user objects to users global variable from the users.pkl file on server
+  '''
+  global CHATS_IN_SERVER
+  file = open('chats.pkl','rb')
+  CHATS_IN_SERVER = pickle.load(file) # will be load a list of already existing User type objects
   file.close()
 
 def password_validity(password):
