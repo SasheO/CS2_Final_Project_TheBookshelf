@@ -72,7 +72,7 @@ print(response)
 print(response.json())
 
 # test user viewing chat message in specific chat
-my_chats_data = {"username": user_name, "option": "send messages", "with": "Sashe", "message": "Sure, do you live around DC? We can meet up at a cafe to exchange books ;)"}
+my_chats_data = {"username": user_name, "option": "view messages", "with": "Sashe"}
 response = requests.get(BASE_URL + "my_chats", json=my_chats_data)
 print(response)
 print(response.json())
