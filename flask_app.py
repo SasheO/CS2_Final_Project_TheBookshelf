@@ -300,6 +300,7 @@ def my_chats():
           if token in CHATS_IN_SERVER:
             CHATS_IN_SERVER[token].add_message(message_chat)
             save_chats_to_server()
+            response['chat with '+chat_with] = CHATS_IN_SERVER[token].str_messages()
             return jsonify(response)
           else:
             response['msg'] = "Error occured: Chat not saved"
