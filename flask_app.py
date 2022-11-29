@@ -8,6 +8,7 @@ import binascii, os
 USERS_IN_SERVER = []
 BOOKS_IN_SERVER = {}
 
+
 app = Flask(__name__)
 
 # to enable user session management
@@ -28,8 +29,14 @@ def load_user(user_id): # needed for flask-login session management
     if person.username == user_id:
       return person
 
-def login_required():
-  pass
+def load_book(book_title):
+  file = open('books.pkl', 'rb')
+  books = pickle.load(file)
+  file.close()
+
+  for book in books:
+    if book.title == book_title:
+      return book
 
 def generate_key(self):
     return binascii.hexlify(os.urandom(10)).decode()
@@ -234,56 +241,108 @@ def my_chats():
 # login required does not work because session data is not stored, so the user is essentially not logged in.
 @app.route("/book_request", methods=['GET']) 
 def bookrequest(): 
-  response = {'msg': ""} #response given back to the client
-
-  # for testing purposes
-  load_books_from_server()
-  response['books_in_server'] = str(BOOKS_IN_SERVER)
-
-
-  data = json.loads(request.data)
-
-  #check if user provided a book title to check and returns a detailed error message if not.
-  if "book title" not in data:
-    response['msg'] = "Please provide a book title. Remember to make the key of the dictionary 'book title"
-    return jsonify(response)
-
-  #check if book requested is in the bookshelf and let the user know if we have the book or not.
-  book_title = data['book title'].lower()
-  if book_title in BOOKS_IN_SERVER:
-    users = []
-    response['msg'] = f'''
-    Your requested book {book_title} has been found on the bookshelf!
-    Here is a list of all the users that own the book.
-    If the book is currently available for borrowing from that user,
-    we put a true beside their name.
-    {BOOKS_IN_SERVER[book_title]}
-    '''
-
-
-  else:
-    response['msg'] = "sorry we do not have your requested book."
-  return jsonify(response)
-
-@app.route("/borrow_request", methods=['GET']) 
-def borrow_request():
   response = {'msg': ""}
 
   data = json.loads(request.data)
 
-'''
-  When the chat rooms are set up, here i would call the method to connect the two users.
+  if 'book title' not in data:
+    response['msg'] = "Please provide a book title"
+    return response
 
-  Perhaps have something here that calls the my_request method passing in the username of the user requested. 
-  This sends a borrow request to the requested where they can accept or decline the request.
-  With this method, I wont need to have my_reuest checking periodically for a new request.
-  Because when a request is sent, the method will be called immediately and the request sent.
-'''
+  load_books_from_server()
 
-@app.route("/my_request", methods=['GET']) 
-def my_request():
+  book_title = data['book title'].lower()
 
-  pass
+  if book_title in BOOKS_IN_SERVER:
+    response['msg'] = f"Congratulations! your book request was found on the bookshelf. {BOOKS_IN_SERVER[book_title]}"
+
+  else:
+    response['msg'] = "Sorry we do not have your requested book."
+
+  return jsonify(response)
+
+
+@app.route("/borrow_request", methods=['GET'])
+def borrow_request():
+  '''
+  This function enables the user to make a book request to another user known as the lender
+  format of input: data = {
+    "lender username" : name of the user the book will be requested from
+    "book" : book title requested
+    "borrower username" : name of person intending to borrow the book
+    }
+  '''
+  data = json.loads(request.data)
+  lender = load_user(data['lender username'])
+  book_requested = data['book']
+  borrower = data['borrower username']
+
+  load_users_from_server()  #update the USERS_IN_SERVER to have the latest data stored
+  
+  for book_ in lender.books_in_possession:
+    if book_.title.lower() == book_requested.lower():
+      book_.people_who_have_requested[borrower] = False
+      save_user(lender)     #save the changes made to the user in USERS_IN_SERVER
+      save_users_to_server()    #save changes made in USERS_IN_SERVER to the database
+      return jsonify("Your book request has been sent to {}".format(lender.username))
+
+  return jsonify("Your book request was not found")
+
+@app.route("/view_my_requests", methods=['GET'])
+def view_my_requests():
+  '''
+  This function enables the user (known as lender in this case) to view all book requests made to him/her
+  format of input: data = {"lender username" : " ",}
+  '''
+  data = json.loads(request.data)
+  lender = load_user(data['lender username'])
+  borrow_requests = {}
+
+  for book_ in lender.books_in_possession:
+    borrow_requests[book_.title] = book_.people_who_have_requested
+
+  return jsonify("Here are all the borrow requests you have {}".format(borrow_requests))
+
+@app.route("/grant_book_request", methods=['GET'])
+def grant_book_request():
+  '''
+  This function enables the user (lender) to grant a book request to user that requested (borrower)
+  format of input: data = {
+    "lender username" : name of the user granting the book request
+    "book" : book title requested
+    "borrower username" : name of person to borrow to
+    "decision" : True indicating that you want to borrow the book out or False indicating otherwise
+    }
+  '''
+  data = json.loads(request.data)
+  lender = load_user(data['lender username'])
+  book_requested = data['book']
+  borrower = data['borrower username']
+  lend_book_out = data['decision']
+
+  load_users_from_server()
+
+  for book_ in lender.books_in_possession:
+    if book_.title.lower() == book_requested.lower():
+      if lend_book_out == True and book_.available_for_lending == True:
+        book_.people_who_have_requested[borrower] = True
+        book_.available_for_lending = False
+
+        save_user(lender)
+        save_users_to_server()
+
+        return jsonify("You have successfully lent {} out to {}".format(book_requested, borrower))
+
+      elif lend_book_out == True and book_.available_for_lending == False:
+        save_user(lender)
+        save_users_to_server()
+        return jsonify("You have already lent this book out to someone else.")
+
+      else:
+        book_.people_who_have_requested.pop(borrower)
+        save_user(lender)
+        save_users_to_server()
+        return jsonify("You have denied {} access to your book: {}".format(borrower, book_requested))
 
 def save_books_to_server():
   '''
@@ -325,7 +384,7 @@ def load_users_from_server():
   file.close()
 
 def password_validity(password):
-  repsonse_message = ""
+  response_message = ""
   l, u, p, d = 0, 0, 0, 0
   if (len(password) >= 8):
     for i in password:

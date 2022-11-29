@@ -6,6 +6,7 @@ class Book:
         self.genre = genre
         self.available_for_lending = True
         self.owner = owner
+        self.people_who_have_requested = {}
     
     def lend(self):
         self.available_for_lending = False

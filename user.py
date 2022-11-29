@@ -48,7 +48,6 @@ class User:
             return True
         return False
 
-
     def __del__(self):
         # should also delete in server
         pass 
