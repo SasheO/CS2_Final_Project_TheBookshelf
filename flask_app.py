@@ -259,38 +259,49 @@ def my_chats():
   option = data['option']
   if option not in ["view chats", "view messages", "send messages"]:
     response['msg'] = "invalid option"
-    return response
+    return jsonify(response)
 
   if option == "view chats":
     # todo: show if the chats have unread messages or not
-    response['chats'] = str([other_person_in_chat for other_person_in_chat in person.chat_tokens_map.values()])
+    if person.chat_tokens_map:
+      response['chats'] = str([other_person_in_chat for other_person_in_chat in person.chat_tokens_map.values()])
+    else:
+      return "You have no chats"
     return jsonify(response)
 
   chat_with = data['with']
 
   if option == "view messages":
-    for token,other_person_in_chat in person.chat_tokens_map.items():
-      if other_person_in_chat == chat_with:
-        if token in CHATS_IN_SERVER:
-          # fill in to see until last "seen" message or all five messages?
-          response['chat with '+chat_with] = CHATS_IN_SERVER[token].str_messages()
-          return jsonify(response)
-        else:
-          response['msg'] = "Error occured: Chat not available"
-          return jsonify(response)
+    if person.chat_tokens_map:
+      for token,other_person_in_chat in person.chat_tokens_map.items():
+        if other_person_in_chat == chat_with:
+          if token in CHATS_IN_SERVER:
+            # fill in to see until last "seen" message or all five messages?
+            response['chat with '+chat_with] = CHATS_IN_SERVER[token].str_messages()
+            return jsonify(response)
+          else:
+            response['msg'] = "Error occured: Chat not available"
+            return jsonify(response)
+    else:
+      return "You have no chats"
 
   if option == "send messages":
     message = data['message']
     message_chat = MessageNode(message, username)
-    for token,other_person_in_chat in person.chat_tokens_map.items():
-      if other_person_in_chat == chat_with:
-        if token in CHATS_IN_SERVER:
-          CHATS_IN_SERVER[token].add_message(message_chat)
-          save_chats_to_server()
-          return jsonify(response)
-        else:
-          response['msg'] = "Error occured: Chat not saved"
-          return jsonify(response)
+    if person.chat_tokens_map:
+
+      for token,other_person_in_chat in person.chat_tokens_map.items():
+        if other_person_in_chat == chat_with:
+          if token in CHATS_IN_SERVER:
+            CHATS_IN_SERVER[token].add_message(message_chat)
+            save_chats_to_server()
+            return jsonify(response)
+          else:
+            response['msg'] = "Error occured: Chat not saved"
+            return jsonify(response)
+    else:
+      return "You have no chats"
+
     # TODO: if a chat with the other person does not exist, create one
 
 
@@ -334,28 +345,31 @@ def borrow_request():
   lender = load_user(data['lender username'])
   book_requested = data['book']
   borrower_username = data['borrower username']
+  borrower = load_user(borrower_username)
 
   load_users_from_server()  #update the USERS_IN_SERVER to have the latest data stored
 
   for book_ in lender.books_in_possession:
     if book_.title.lower() == book_requested.lower():
       book_.people_who_have_requested[borrower_username] = False
+      
+      create_new_chat = True
+      if borrower.chat_tokens_map:
+        if lender.username in borrower.chat_tokens_map.values():
+          create_new_chat = False
+
+      if create_new_chat:
+        load_chats_from_server()
+        new_chat_token = generate_key()
+        lender.new_chat(new_chat_token, borrower_username)
+        borrower.new_chat(new_chat_token, lender.username)
+        new_chat = ChatLinkedList([borrower_username, lender.username])
+        CHATS_IN_SERVER[new_chat_token] = new_chat
+        save_chats_to_server()
+      
       save_user(borrower)
       save_user(lender)     #save the changes made to the user in USERS_IN_SERVER
       save_users_to_server()    #save changes made in USERS_IN_SERVER to the database
-
-      if borrower.chat_tokens_map:
-        if lender.username in borrower.chat_tokens_map.values():
-          return jsonify("Your book request has been sent to {}! Chat with them to arrange the logistics...".format(lender.username))
-
-      load_chats_from_server()
-      new_chat_token = generate_key()
-      lender.new_chat(new_chat_token, borrower_username)
-      borrower = load_user(borrower_username)
-      borrower.new_chat(new_chat_token, lender.username)
-      new_chat = ChatLinkedList([borrower_username, lender.username])
-      save_chats_to_server()
-
       return jsonify("Your book request has been sent to {}! Chat with them to arrange the logistics...".format(lender.username))
 
   return jsonify("Your book request was not found")
