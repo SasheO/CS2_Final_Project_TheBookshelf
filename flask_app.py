@@ -266,7 +266,8 @@ def my_chats():
     if person.chat_tokens_map:
       response['chats'] = str([other_person_in_chat for other_person_in_chat in person.chat_tokens_map.values()])
     else:
-      return "You have no chats"
+      response['msg'] = "You have no chats"
+      return response
     return jsonify(response)
 
   chat_with = data['with']
@@ -283,7 +284,9 @@ def my_chats():
             response['msg'] = "Error occured: Chat not available"
             return jsonify(response)
     else:
-      return "You have no chats"
+      response['msg'] = "You have no chats"
+      return response
+
 
   if option == "send messages":
     message = data['message']
@@ -300,7 +303,9 @@ def my_chats():
             response['msg'] = "Error occured: Chat not saved"
             return jsonify(response)
     else:
-      return "You have no chats"
+      response['msg'] = "You have no chats"
+      return response
+
 
     # TODO: if a chat with the other person does not exist, create one
 
@@ -341,6 +346,7 @@ def borrow_request():
     "borrower username" : name of person intending to borrow the book
     }
   '''
+  response = {}
   data = json.loads(request.data)
   lender = load_user(data['lender username'])
   book_requested = data['book']
@@ -368,11 +374,14 @@ def borrow_request():
         save_chats_to_server()
       
       save_user(borrower)
+      save_users_to_server()
       save_user(lender)     #save the changes made to the user in USERS_IN_SERVER
       save_users_to_server()    #save changes made in USERS_IN_SERVER to the database
-      return jsonify("Your book request has been sent to {}! Chat with them to arrange the logistics...".format(lender.username))
-
-  return jsonify("Your book request was not found")
+      response["msg"] = "Your book request has been sent to {}! Chat with them to arrange the logistics...".format(lender.username)
+      return jsonify(response)
+  
+  response["msg"] = "Your book request was not found"
+  return jsonify(response)
 
 @app.route("/view_my_requests", methods=['GET'])
 def view_my_requests():
