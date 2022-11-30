@@ -18,6 +18,39 @@ def login_or_signup(username, password, l_or_s):
         return True
     return False
     
+def my_books(username):
+    print("My Books")
+    options = ["view", "add", "delete","delete all"]
+    for indx in range(len(options)):
+        print(str(indx+1) + ". " + options[indx])
+
+    exxit = False
+    while exxit == False:
+        option_chosen = input("Enter 1, 2, 3 or 4 to pick an option: ")
+        try:
+            option_chosen = options[int(option_chosen)-1]
+            exxit = True
+        except:
+            print("Invalid option chosen")
+    my_books_data = {"option": option_chosen,"username": username}
+
+    if option_chosen == "add" or option_chosen == "delete":
+        my_books_data['titles'] = []
+        exxit = False
+        while exxit == False:
+            title = input(f"Enter titles you wish to {option_chosen}: ")
+            my_books_data['titles'].append(title)
+            more = input("Add more? Enter 'y' or 'n': ").lower().strip()
+            if more == "n":
+                exxit = True
+    response = requests.post(BASE_URL + "my_books", json=my_books_data)
+    if response.status_code != 200:
+        print(f"Error encountered logging in. Error code: {response.status_code}")
+        return
+    output = response.json()
+    print(output['msg'])
+
+    
 l_or_s = input("Enter 'L' to login or 'S' to sign up:").lower().strip()
 
 username = input("enter username: ")
