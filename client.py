@@ -143,15 +143,30 @@ def my_chats(username): # for borrowers and lenders
     else:
         print(response.json()['msg'])
 
+def lender_options():
+    pass
 
-# l_or_s = input("Enter 'L' to login or 'S' to sign up:").lower().strip()
+def borrower_options():
+    pass
+if __name__=="__main__":
+    l_or_s = input("Enter 'L' to login or 'S' to sign up:").lower().strip()
 
-username = input("enter username: ")
-password = input("enter password: ")
+    username = input("enter username: ")
+    password = input("enter password: ")
 
-# logged_in = login_or_signup(username, password, l_or_s)
+    logged_in = login_or_signup(username, password, l_or_s)
 
-# if logged_in:
-#     borrower_or_lender = input("Do you want to be a borrower or lender?\nEnter 'b' for borrower or 'l' for lender: ")
+    if logged_in:
+        borrower_or_lender = input("Do you want to be a borrower or lender?\nEnter 'b' for borrower or 'l' for lender: ").lower().strip()
+        while borrower_or_lender not in ["b","l"]:
+            print("Invalid option chosen.")
+            borrower_or_lender = input("Do you want to be a borrower or lender?\nEnter 'b' for borrower or 'l' for lender: ").lower().strip()
+        while True:
+            if borrower_or_lender == "b":
+                borrower_options()
+            else:
+                lender_options()
+            logout = input("Do you want to logout? Enter 'y' or 'n': ").lower().strip()
+            if logout == "y":
+                break
 
-my_chats(username)
