@@ -158,7 +158,7 @@ def my_books(): #NOT TESTED
 
   if option not in ["view", "add", "delete","delete all"]:
     response['msg'] = "invalid option"
-    return response
+    return jsonify(response)
 
   if option == "view":
     if person.books_in_possession == None:
@@ -290,7 +290,7 @@ def my_chats():
       return jsonify(response)
     else:
       response['msg'] = "You have no chats"
-      return response
+      return jsonify(response)
 
 
   if option == "send messages":
@@ -312,7 +312,7 @@ def my_chats():
       return jsonify(response)
     else:
       response['msg'] = "You have no chats"
-      return response
+      return jsonify(response)
 
 
     # TODO: if a chat with the other person does not exist, create one
@@ -329,7 +329,7 @@ def book_search():
 
   if 'book title' not in data:
     response['msg'] = "Please provide a book title"
-    return response
+    return jsonify(response)
 
   load_books_from_server()
 

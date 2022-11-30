@@ -51,7 +51,7 @@ def my_books(username): # for lenders only
     output = response.json()
     print(output['msg'])
 
-def book_search(): # for borrowers/not logged in
+def book_search(username=None): # for borrowers/not logged in
     print("-"*15)
     title = input("What books are you searching for? ")
     book_search_data = {"book title": title}
@@ -63,16 +63,13 @@ def book_search(): # for borrowers/not logged in
     print(output['msg'])
     return title
 
-def borrow_request(username, book=None):
+def borrow_request(username): # for borrowers
     print("-"*15)
-    if book == None:
-        book = input("Which book do you want to borrow?")
-    lender = input("Who do you want to get it from")
-    borrow_request_data = {"borrower username" : username,
-    "book" :book,
-    "lender username" : lender}
+    book = input("Which book do you want to borrow? ")
+    lender = input("Who do you want to get it from? ")
+    borrow_request_data = {"borrower username" : username, "book": book,    "lender username" : lender}
     response = requests.get(BASE_URL + "borrow_request", json=borrow_request_data)
-    print(response.json())
+    print(response.json()['msg'])
 
 def view_my_requests(username): # for lenders only
     print("-"*15)
@@ -107,6 +104,7 @@ def grant_book_request(username): # lenders only
     print(response.json())
 
 def my_chats(username): # for borrowers and lenders
+    print("-"*15)
     print("My Chats")
     options = ["view chats", "view messages", "send messages"]
     for indx in range(len(options)):
@@ -165,27 +163,43 @@ def lender_options(username):
     func(username)
 
 def borrower_options(username):
-    pass
+    options = {"1": ("Search the Bookshelf for a title", book_search), "2": ("My Chats", my_chats), "3": ("Ask to borrow a book", borrow_request)}
+    for indx in options:
+        print(indx + ". " + options[indx][0])
+
+    exxit = False
+    while exxit == False:
+        option_chosen = input("Enter 1, 2 or 3 to pick an option: ").strip()
+        if option_chosen in options:
+            exxit = True
+        else:
+            print("Invalid option chosen")
+    func = options[option_chosen][1]
+    func(username)
+
 if __name__=="__main__":
-    l_or_s = input("Enter 'L' to login or 'S' to sign up:").lower().strip()
+    l_or_s = input("Enter 'L' to login or 'S' to sign up or 'B' to search the Bookshelf for a title: ").lower().strip()
+    if l_or_s == 'b':
+        book_search()
+    else:
+        username = input("enter username: ")
+        password = input("enter password: ")
 
-    username = input("enter username: ")
-    password = input("enter password: ")
+        logged_in = login_or_signup(username, password, l_or_s)
 
-    logged_in = login_or_signup(username, password, l_or_s)
-
-    if logged_in:
-        borrower_or_lender = input("Do you want to be a borrower or lender?\nEnter 'b' for borrower or 'l' for lender: ").lower().strip()
-        while borrower_or_lender not in ["b","l"]:
-            print("Invalid option chosen.")
+        if logged_in:
             borrower_or_lender = input("Do you want to be a borrower or lender?\nEnter 'b' for borrower or 'l' for lender: ").lower().strip()
-        while True:
-            if borrower_or_lender == "b":
-                borrower_options(username)
-            else:
-                lender_options(username)
-            logout = input("Do you want to logout? Enter 'y' or 'n': ").lower().strip()
-            if logout == "y":
-                break
+            while borrower_or_lender not in ["b","l"]:
+                print("Invalid option chosen.")
+                borrower_or_lender = input("Do you want to be a borrower or lender?\nEnter 'b' for borrower or 'l' for lender: ").lower().strip()
+            while True:
+                print("-"*15)
+                if borrower_or_lender == "b":
+                    borrower_options(username)
+                else:
+                    lender_options(username)
+                logout = input("Do you want to logout? Enter 'y' or 'n': ").lower().strip()
+                if logout == "y":
+                    break
 
 
