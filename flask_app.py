@@ -130,7 +130,7 @@ def signup():
   pickle.dump(USERS_IN_SERVER, p_file)
   p_file.close()
   if login_user(person):
-    response['msg'] = f"welcome back, {current_user.username}"
+    response['msg'] = f"welcome back, {username}"
     return jsonify(response)
   else:
     response['msg'] = "login failed"
