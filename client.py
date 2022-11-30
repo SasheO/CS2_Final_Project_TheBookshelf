@@ -75,6 +75,29 @@ def view_my_requests(username): # for lenders only
     # TODO: make view my requests more user friendly in server
     view_my_requests_data = {"lender username" : username}
     response = requests.get(BASE_URL + "view_my_requests", json=view_my_requests_data)
+    if response.status_code != 200:
+        print(f"Error encountered viewing the borrow requests sent to you. Error code: {response.status_code}")
+        return
+    print(response.json())
+
+def grant_book_request(username):
+    book = input("What book? ")
+    borrower = input("Whose request are you deciding? Type in username: ")
+    decision = input("Enter 'y' to accept or 'n' to decline: ").lower().strip()
+    if decision == 'y':
+        decision = True
+    else:
+        decision = False
+    grant_book_request_data = {
+    "lender username" : username,
+    "book" : book,
+    "borrower username" : borrower,
+    "decision" : decision
+    } 
+    response = requests.get(BASE_URL + "grant_book_request", json=grant_book_request_data)
+    if response.status_code != 200:
+        print(f"Error encountered viewing the borrow requests sent to you. Error code: {response.status_code}")
+        return
     print(response.json())
 
 # l_or_s = input("Enter 'L' to login or 'S' to sign up:").lower().strip()
