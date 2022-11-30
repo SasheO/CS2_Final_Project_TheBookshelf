@@ -100,14 +100,52 @@ def grant_book_request(username):
         return
     print(response.json())
 
-# l_or_s = input("Enter 'L' to login or 'S' to sign up:").lower().strip()
+def my_chats(username):
+    print("My Chats")
+    options = ["view chats", "view messages", "send messages"]
+    for indx in range(len(options)):
+        print(str(indx+1) + ". " + options[indx])
 
-username = input("enter username: ")
-password = input("enter password: ")
+    exxit = False
+    while exxit == False:
+        option_chosen = input("Enter 1, 2 or 3 to pick an option: ")
+        try:
+            option_chosen = options[int(option_chosen)-1]
+            exxit = True
+        except:
+            print("Invalid option chosen")
+    my_chats_data = {"option": option_chosen,"username": username}
+
+    if option_chosen == "view chats":
+        response = requests.get(BASE_URL + "my_chats", json=my_chats_data)
+        if response.status_code != 200:
+            print(f"Error encountered viewing your chats. Error code: {response.status_code}")
+            return
+        if 'chats' in response.json():
+            print(response.json()['chats'])
+        else:
+            print(response.json()['msg'])
+
+
+
+    # TODO: get input for sending/viewing messages, complete the UI for this
+    # test user viewing chat message in specific chat
+    my_chats_data = {"username": user_name, "option": "view messages", "with": "Sashe"}
+    response = requests.get(BASE_URL + "my_chats", json=my_chats_data)
+    print(response)
+    print(response.json())
+
+    # test user sending chat message to other user
+    my_chats_data = {"username": user_name, "option": "send messages", "with": "Sashe", "message": "Sure, do you live around DC? We can meet up at a cafe to exchange books ;)"}
+    response = requests.get(BASE_URL + "my_chats", json=my_chats_data)
+    print(response)
+    print(response.json())
+    # l_or_s = input("Enter 'L' to login or 'S' to sign up:").lower().strip()
+
+    username = input("enter username: ")
+    password = input("enter password: ")
 
 # logged_in = login_or_signup(username, password, l_or_s)
 
 # if logged_in:
 #     borrower_or_lender = input("Do you want to be a borrower or lender?\nEnter 'b' for borrower or 'l' for lender: ")
-
-view_my_requests(username)

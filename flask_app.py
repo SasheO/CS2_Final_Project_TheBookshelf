@@ -271,7 +271,6 @@ def my_chats():
       response['chats'] = str([other_person_in_chat for other_person_in_chat in person.chat_tokens_map.values()])
     else:
       response['msg'] = "You have no chats"
-      return response
     return jsonify(response)
 
   chat_with = data['with']
