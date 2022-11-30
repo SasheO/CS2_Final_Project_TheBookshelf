@@ -100,7 +100,7 @@ def grant_book_request(username):
         return
     print(response.json())
 
-def my_chats(username):
+def my_chats(username): # for borrowers and lenders
     print("My Chats")
     options = ["view chats", "view messages", "send messages"]
     for indx in range(len(options)):
@@ -125,27 +125,33 @@ def my_chats(username):
             print(response.json()['chats'])
         else:
             print(response.json()['msg'])
+        return
 
-
-
-    # TODO: get input for sending/viewing messages, complete the UI for this
-    # test user viewing chat message in specific chat
-    my_chats_data = {"username": user_name, "option": "view messages", "with": "Sashe"}
+    chat_with = input("Enter the name of the person the chat is with: ")
+    my_chats_data["with"] = chat_with
+    if option_chosen == "send messages":
+        message = input("Type message: ")
+        my_chats_data["message"] = message
     response = requests.get(BASE_URL + "my_chats", json=my_chats_data)
-    print(response)
-    print(response.json())
 
-    # test user sending chat message to other user
-    my_chats_data = {"username": user_name, "option": "send messages", "with": "Sashe", "message": "Sure, do you live around DC? We can meet up at a cafe to exchange books ;)"}
-    response = requests.get(BASE_URL + "my_chats", json=my_chats_data)
-    print(response)
-    print(response.json())
-    # l_or_s = input("Enter 'L' to login or 'S' to sign up:").lower().strip()
+    if response.status_code != 200:
+        print(f"Error encountered {option_chosen[:4]}ing message to {chat_with}. Error code: {response.status_code}")
+        return
+    print("-"*15)
+    if 'chat' in response.json():
+        print(response.json()['chat'])
+    else:
+        print(response.json()['msg'])
 
-    username = input("enter username: ")
-    password = input("enter password: ")
+
+# l_or_s = input("Enter 'L' to login or 'S' to sign up:").lower().strip()
+
+username = input("enter username: ")
+password = input("enter password: ")
 
 # logged_in = login_or_signup(username, password, l_or_s)
 
 # if logged_in:
 #     borrower_or_lender = input("Do you want to be a borrower or lender?\nEnter 'b' for borrower or 'l' for lender: ")
+
+my_chats(username)
