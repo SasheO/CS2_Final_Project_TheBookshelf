@@ -73,14 +73,13 @@ def borrow_request(username): # for borrowers
 
 def view_my_requests(username): # for lenders only
     print("-"*15)
-    print("Requests Sent to You:")
     # TODO: make view my requests more user friendly in server
     view_my_requests_data = {"lender username" : username}
     response = requests.get(BASE_URL + "view_my_requests", json=view_my_requests_data)
     if response.status_code != 200:
         print(f"Error encountered viewing the borrow requests sent to you. Error code: {response.status_code}")
         return
-    print(response.json())
+    print(response.json()['msg'])
 
 def grant_book_request(username): # lenders only
     print("-"*15)

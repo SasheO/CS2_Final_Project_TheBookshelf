@@ -162,10 +162,12 @@ def my_books(): #NOT TESTED
 
   if option == "view":
     if person.books_in_possession == None:
-      response['msg'] = "None"
+      response['msg'] = "You have not added any books"
     else:
-      book_titles = [item.title for item in person.books_in_possession]
-      response['msg'] = book_titles
+      book_titles = ""
+      for item in person.books_in_possession:
+        book_titles += "\n* " + item.title
+      response['msg'] = "Here are your books" + book_titles
 
   if option == "delete":
     load_books_from_server()
@@ -410,14 +412,25 @@ def view_my_requests():
   This function enables the user (known as lender in this case) to view all book requests made to him/her
   format of input: data = {"lender username" : " ",}
   '''
+  response = {}
   data = json.loads(request.data)
   lender = load_user(data['lender username'])
-  borrow_requests = {}
+  borrow_requests = ""
 
   for book_ in lender.books_in_possession:
-    borrow_requests[book_.title] = book_.people_who_have_requested
-
-  return jsonify("Here are all the borrow requests you have {}".format(borrow_requests))
+    if book_.people_who_have_requested != {}:
+      borrow_requests += "* " + book_.title + ":"
+      for borrower in book_.people_who_have_requested:
+        if book_.people_who_have_requested[borrower] == True:
+          lent_out_bool = "lent"
+        else:
+          lent_out_bool = "awaiting your response"
+        borrow_requests += "\n\t" + borrower + " - " + lent_out_bool
+  if borrow_requests != "":
+    response['msg'] = "Requests Sent to You:\n" + borrow_requests
+  else:
+    response['msg'] = "You do not currently have any borrow requests"
+  return jsonify(response)
 
 @app.route("/grant_book_request", methods=['GET'])
 def grant_book_request():
