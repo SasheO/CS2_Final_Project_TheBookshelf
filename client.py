@@ -59,7 +59,18 @@ def book_search(): # for borrowers/not logged in
         return
     output = response.json()
     print(output['msg'])
+    return title
 
+def borrow_request(username, book=None):
+    if book == None:
+        book = input("Which book do you want to borrow?")
+    lender = input("Who do you want to get it from")
+    borrow_request_data = {"borrower username" : username,
+    "book" :book,
+    "lender username" : lender}
+    response = requests.get(BASE_URL + "borrow_request", json=borrow_request_data)
+    print(response)
+    print(response.json())
 
 # l_or_s = input("Enter 'L' to login or 'S' to sign up:").lower().strip()
 

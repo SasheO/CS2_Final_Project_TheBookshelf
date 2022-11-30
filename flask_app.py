@@ -366,6 +366,13 @@ def borrow_request():
 
   load_users_from_server()  #update the USERS_IN_SERVER to have the latest data stored
 
+  if lender == None:
+    response["msg"] = "The user you wish to borrow from does not exist"
+    return jsonify(response)
+  if lender.books_in_possession == None:
+    response["msg"] = "Your book request was not found"
+    return jsonify(response)
+    
   for book_ in lender.books_in_possession:
     if book_.title.lower() == book_requested.lower():
       book_.people_who_have_requested[borrower_username] = False

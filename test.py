@@ -22,20 +22,20 @@ print(response)
 print(response.json())
 
 #test response if requested book is in server
-book_request_data = {"book title": "Pachinko"}
-response = requests.get(BASE_URL + "book_request", json=book_request_data)
+book_search_data = {"book title": "Pachinko"}
+response = requests.get(BASE_URL + "book_search", json=book_search_data)
 print(response)
 print(response.json())
 
 #test response if requested book is not in server
-book_request_data = {"book title": "Little Women"}
-response = requests.get(BASE_URL + "book_request", json=book_request_data)
+book_search_data = {"book title": "Little Women"}
+response = requests.get(BASE_URL + "book_search", json=book_search_data)
 print(response)
 print(response.json())
 
 #test response if user doesn't put 'book title' in the input dictionary
-book_request_data = {"book": "trial"}
-response = requests.get(BASE_URL + "book_request", json=book_request_data)
+book_search_data = {"book": "trial"}
+response = requests.get(BASE_URL + "book_search", json=book_search_data)
 print(response)
 print(response.json())
 
@@ -54,13 +54,13 @@ print(response)
 print(response.json())
 
 #test lender granting book request
-grant_book_request_data = {
+grant_book_search_data = {
   "lender username" : user_name,
   "book" : 'Food Recipes',
   "borrower username" : 'mimmiso',
   "decision" : False 
   } 
-response = requests.get(BASE_URL + "grant_book_request", json=grant_book_request_data)
+response = requests.get(BASE_URL + "grant_book_search", json=grant_book_search_data)
 print(response)
 print(response.json())
 

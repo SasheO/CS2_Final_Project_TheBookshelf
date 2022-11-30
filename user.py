@@ -4,7 +4,7 @@ class User:
         # should also save user in server
         self.username = username
         self.__password = password
-        self.books_in_possession = None # lisy book objects, not title
+        self.books_in_possession = None # list of book objects, not strings of book titles
         self.chat_tokens_map = None
 
     def is_authenticated(): # needed for flask-login, rudimentary hardcoded
