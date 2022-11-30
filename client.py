@@ -19,6 +19,7 @@ def login_or_signup(username, password, l_or_s):
     return False
     
 def my_books(username): # for lenders only
+    print("-"*15)
     print("My Books")
     options = ["view", "add", "delete","delete all"]
     for indx in range(len(options)):
@@ -51,6 +52,7 @@ def my_books(username): # for lenders only
     print(output['msg'])
 
 def book_search(): # for borrowers/not logged in
+    print("-"*15)
     title = input("What books are you searching for? ")
     book_search_data = {"book title": title}
     response = requests.get(BASE_URL + "book_search", json=book_search_data)
@@ -62,6 +64,7 @@ def book_search(): # for borrowers/not logged in
     return title
 
 def borrow_request(username, book=None):
+    print("-"*15)
     if book == None:
         book = input("Which book do you want to borrow?")
     lender = input("Who do you want to get it from")
@@ -72,6 +75,8 @@ def borrow_request(username, book=None):
     print(response.json())
 
 def view_my_requests(username): # for lenders only
+    print("-"*15)
+    print("Requests Sent to You:")
     # TODO: make view my requests more user friendly in server
     view_my_requests_data = {"lender username" : username}
     response = requests.get(BASE_URL + "view_my_requests", json=view_my_requests_data)
@@ -80,7 +85,8 @@ def view_my_requests(username): # for lenders only
         return
     print(response.json())
 
-def grant_book_request(username):
+def grant_book_request(username): # lenders only
+    print("-"*15)
     book = input("What book? ")
     borrower = input("Whose request are you deciding? Type in username: ")
     decision = input("Enter 'y' to accept or 'n' to decline: ").lower().strip()
@@ -143,10 +149,22 @@ def my_chats(username): # for borrowers and lenders
     else:
         print(response.json()['msg'])
 
-def lender_options():
-    pass
+def lender_options(username):
+    options = {"1": ("My Books", my_books), "2": ("My Chats", my_chats), "3": ("View book requests sent to me", view_my_requests), "4":("Make decision on book request", grant_book_request)}
+    for indx in options:
+        print(indx + ". " + options[indx][0])
 
-def borrower_options():
+    exxit = False
+    while exxit == False:
+        option_chosen = input("Enter 1, 2 or 3 to pick an option: ").strip()
+        if option_chosen in options:
+            exxit = True
+        else:
+            print("Invalid option chosen")
+    func = options[option_chosen][1]
+    func(username)
+
+def borrower_options(username):
     pass
 if __name__=="__main__":
     l_or_s = input("Enter 'L' to login or 'S' to sign up:").lower().strip()
@@ -163,10 +181,11 @@ if __name__=="__main__":
             borrower_or_lender = input("Do you want to be a borrower or lender?\nEnter 'b' for borrower or 'l' for lender: ").lower().strip()
         while True:
             if borrower_or_lender == "b":
-                borrower_options()
+                borrower_options(username)
             else:
-                lender_options()
+                lender_options(username)
             logout = input("Do you want to logout? Enter 'y' or 'n': ").lower().strip()
             if logout == "y":
                 break
+
 
