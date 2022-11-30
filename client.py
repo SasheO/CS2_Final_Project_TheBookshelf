@@ -69,7 +69,12 @@ def borrow_request(username, book=None):
     "book" :book,
     "lender username" : lender}
     response = requests.get(BASE_URL + "borrow_request", json=borrow_request_data)
-    print(response)
+    print(response.json())
+
+def view_my_requests(username): # for lenders only
+    # TODO: make view my requests more user friendly in server
+    view_my_requests_data = {"lender username" : username}
+    response = requests.get(BASE_URL + "view_my_requests", json=view_my_requests_data)
     print(response.json())
 
 # l_or_s = input("Enter 'L' to login or 'S' to sign up:").lower().strip()
@@ -82,4 +87,4 @@ password = input("enter password: ")
 # if logged_in:
 #     borrower_or_lender = input("Do you want to be a borrower or lender?\nEnter 'b' for borrower or 'l' for lender: ")
 
-book_search()
+view_my_requests(username)
