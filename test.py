@@ -3,7 +3,6 @@ import requests
 user_name = 'Elei'
 password = "ComplexPassword@2022"
 book_owned = 'Food Recipe'
-# password = "Testuser4"
 
 BASE_URL = "https://thebookshelf.pythonanywhere.com/"
 
