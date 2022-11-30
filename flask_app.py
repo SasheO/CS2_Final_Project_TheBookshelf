@@ -318,8 +318,8 @@ def my_chats():
 
 # @login_required
 # login required does not work because session data is not stored, so the user is essentially not logged in.
-@app.route("/book_request", methods=['GET'])
-def bookrequest():
+@app.route("/book_search", methods=['GET'])
+def book_search():
   response = {'msg': ""}
 
   data = json.loads(request.data)
@@ -333,7 +333,13 @@ def bookrequest():
   book_title = data['book title'].lower()
 
   if book_title in BOOKS_IN_SERVER:
-    response['msg'] = f"Congratulations! your book request was found on the bookshelf. {BOOKS_IN_SERVER[book_title]}"
+    response['msg'] = f"Congratulations! your book request was found on the bookshelf. The users that have it are:\n"
+    for lender,available_bool in BOOKS_IN_SERVER[book_title]:
+      if available_bool:
+        available = "available"
+      else:
+        available = "currently lent out"
+      response['msg'] += f"{lender}: {available}\n"
 
   else:
     response['msg'] = "Sorry we do not have your requested book."
