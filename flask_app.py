@@ -116,6 +116,10 @@ def signup():
       response['msg'] = "username taken, choose another one"
       return jsonify(response)
 
+  if len(username) < 4:
+    response['msg'] = "username must be at least 4 characters long"
+    return jsonify(response)
+    
   # todo: verify password appropriate complexity and neither username nor password is empty string
   complex_password = password_validity(password)
   if complex_password != 'pass':
