@@ -153,7 +153,7 @@ def lender_options(username):
 
     exxit = False
     while exxit == False:
-        option_chosen = input("Enter 1, 2 or 3 to pick an option: ").strip()
+        option_chosen = input("Enter 1, 2, 3 or 4 to pick an option: ").strip()
         if option_chosen in options:
             exxit = True
         else:
