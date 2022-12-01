@@ -116,6 +116,10 @@ def signup():
       response['msg'] = "username taken, choose another one"
       return jsonify(response)
 
+  if len(username) < 4:
+    response['msg'] = "username must be at least 4 characters long"
+    return jsonify(response)
+    
   # todo: verify password appropriate complexity and neither username nor password is empty string
   complex_password = password_validity(password)
   if complex_password != 'pass':
@@ -130,7 +134,7 @@ def signup():
   pickle.dump(USERS_IN_SERVER, p_file)
   p_file.close()
   if login_user(person):
-    response['msg'] = f"welcome back, {current_user.username}"
+    response['msg'] = f"welcome back, {username}"
     return jsonify(response)
   else:
     response['msg'] = "login failed"
@@ -154,14 +158,16 @@ def my_books(): #NOT TESTED
 
   if option not in ["view", "add", "delete","delete all"]:
     response['msg'] = "invalid option"
-    return response
+    return jsonify(response)
 
   if option == "view":
     if person.books_in_possession == None:
-      response['msg'] = "None"
+      response['msg'] = "You have not added any books"
     else:
-      book_titles = [item.title for item in person.books_in_possession]
-      response['msg'] = book_titles
+      book_titles = ""
+      for item in person.books_in_possession:
+        book_titles += "\n* " + item.title
+      response['msg'] = "Here are your books" + book_titles
 
   if option == "delete":
     load_books_from_server()
@@ -267,7 +273,6 @@ def my_chats():
       response['chats'] = str([other_person_in_chat for other_person_in_chat in person.chat_tokens_map.values()])
     else:
       response['msg'] = "You have no chats"
-      return response
     return jsonify(response)
 
   chat_with = data['with']
@@ -278,7 +283,7 @@ def my_chats():
         if other_person_in_chat == chat_with:
           if token in CHATS_IN_SERVER:
             # fill in to see until last "seen" message or all five messages?
-            response['chat with '+chat_with] = CHATS_IN_SERVER[token].str_messages()
+            response['chat'] = CHATS_IN_SERVER[token].str_messages()
             return jsonify(response)
           else:
             response['msg'] = "Error occured: Chat not available"
@@ -287,7 +292,7 @@ def my_chats():
       return jsonify(response)
     else:
       response['msg'] = "You have no chats"
-      return response
+      return jsonify(response)
 
 
   if option == "send messages":
@@ -300,7 +305,7 @@ def my_chats():
           if token in CHATS_IN_SERVER:
             CHATS_IN_SERVER[token].add_message(message_chat)
             save_chats_to_server()
-            response['chat with '+chat_with] = CHATS_IN_SERVER[token].str_messages()
+            response['chat'] = CHATS_IN_SERVER[token].str_messages()
             return jsonify(response)
           else:
             response['msg'] = "Error occured: Chat not saved"
@@ -309,7 +314,7 @@ def my_chats():
       return jsonify(response)
     else:
       response['msg'] = "You have no chats"
-      return response
+      return jsonify(response)
 
 
     # TODO: if a chat with the other person does not exist, create one
@@ -318,22 +323,28 @@ def my_chats():
 
 # @login_required
 # login required does not work because session data is not stored, so the user is essentially not logged in.
-@app.route("/book_request", methods=['GET'])
-def bookrequest():
+@app.route("/book_search", methods=['GET'])
+def book_search():
   response = {'msg': ""}
 
   data = json.loads(request.data)
 
   if 'book title' not in data:
     response['msg'] = "Please provide a book title"
-    return response
+    return jsonify(response)
 
   load_books_from_server()
 
   book_title = data['book title'].lower()
 
   if book_title in BOOKS_IN_SERVER:
-    response['msg'] = f"Congratulations! your book request was found on the bookshelf. {BOOKS_IN_SERVER[book_title]}"
+    response['msg'] = f"Congratulations! your book request was found on the bookshelf. The users that have it are:\n"
+    for lender,available_bool in BOOKS_IN_SERVER[book_title]:
+      if available_bool:
+        available = "available"
+      else:
+        available = "currently lent out"
+      response['msg'] += f"{lender}: {available}\n"
 
   else:
     response['msg'] = "Sorry we do not have your requested book."
@@ -360,6 +371,13 @@ def borrow_request():
 
   load_users_from_server()  #update the USERS_IN_SERVER to have the latest data stored
 
+  if lender == None:
+    response["msg"] = "The user you wish to borrow from does not exist"
+    return jsonify(response)
+  if lender.books_in_possession == None:
+    response["msg"] = "Your book request was not found"
+    return jsonify(response)
+    
   for book_ in lender.books_in_possession:
     if book_.title.lower() == book_requested.lower():
       book_.people_who_have_requested[borrower_username] = False
@@ -394,14 +412,25 @@ def view_my_requests():
   This function enables the user (known as lender in this case) to view all book requests made to him/her
   format of input: data = {"lender username" : " ",}
   '''
+  response = {}
   data = json.loads(request.data)
   lender = load_user(data['lender username'])
-  borrow_requests = {}
+  borrow_requests = ""
 
   for book_ in lender.books_in_possession:
-    borrow_requests[book_.title] = book_.people_who_have_requested
-
-  return jsonify("Here are all the borrow requests you have {}".format(borrow_requests))
+    if book_.people_who_have_requested != {}:
+      borrow_requests += "* " + book_.title + ":"
+      for borrower in book_.people_who_have_requested:
+        if book_.people_who_have_requested[borrower] == True:
+          lent_out_bool = "lent"
+        else:
+          lent_out_bool = "awaiting your response"
+        borrow_requests += "\n\t" + borrower + " - " + lent_out_bool
+  if borrow_requests != "":
+    response['msg'] = "Requests Sent to You:\n" + borrow_requests
+  else:
+    response['msg'] = "You do not currently have any borrow requests"
+  return jsonify(response)
 
 @app.route("/grant_book_request", methods=['GET'])
 def grant_book_request():

@@ -3,7 +3,6 @@ import requests
 user_name = 'Elei'
 password = "ComplexPassword@2022"
 book_owned = 'Food Recipe'
-# password = "Testuser4"
 
 BASE_URL = "https://thebookshelf.pythonanywhere.com/"
 
@@ -23,20 +22,20 @@ print(response)
 print(response.json())
 
 #test response if requested book is in server
-book_request_data = {"book title": "Pachinko"}
-response = requests.get(BASE_URL + "book_request", json=book_request_data)
+book_search_data = {"book title": "Pachinko"}
+response = requests.get(BASE_URL + "book_search", json=book_search_data)
 print(response)
 print(response.json())
 
 #test response if requested book is not in server
-book_request_data = {"book title": "Little Women"}
-response = requests.get(BASE_URL + "book_request", json=book_request_data)
+book_search_data = {"book title": "Little Women"}
+response = requests.get(BASE_URL + "book_search", json=book_search_data)
 print(response)
 print(response.json())
 
 #test response if user doesn't put 'book title' in the input dictionary
-book_request_data = {"book": "trial"}
-response = requests.get(BASE_URL + "book_request", json=book_request_data)
+book_search_data = {"book": "trial"}
+response = requests.get(BASE_URL + "book_search", json=book_search_data)
 print(response)
 print(response.json())
 
