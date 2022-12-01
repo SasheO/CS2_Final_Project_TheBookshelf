@@ -419,7 +419,7 @@ def view_my_requests():
 
   for book_ in lender.books_in_possession:
     if book_.people_who_have_requested != {}:
-      borrow_requests += "* " + book_.title + ":"
+      borrow_requests += "\n* " + book_.title + ":"
       for borrower in book_.people_who_have_requested:
         if book_.people_who_have_requested[borrower] == True:
           lent_out_bool = "lent"
@@ -427,7 +427,7 @@ def view_my_requests():
           lent_out_bool = "awaiting your response"
         borrow_requests += "\n\t" + borrower + " - " + lent_out_bool
   if borrow_requests != "":
-    response['msg'] = "Requests Sent to You:\n" + borrow_requests
+    response['msg'] = "Requests Sent to You:" + borrow_requests
   else:
     response['msg'] = "You do not currently have any borrow requests"
   return jsonify(response)

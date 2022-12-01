@@ -2,7 +2,7 @@ import requests
 
 user_name = 'Elei'
 password = "ComplexPassword@2022"
-book_owned = 'Food Recipe'
+book_owned = 'Food Recipe' #also Pachinko and Against the Loveless World
 
 BASE_URL = "https://thebookshelf.pythonanywhere.com/"
 
@@ -41,8 +41,8 @@ print(response.json())
 
 #test borrower making borrow request
 borrow_request_data = {"lender username" : user_name,
-    "book" : 'Food Recipes',
-    "borrower username" : 'mimmiso' }
+    "book" : 'Food recipes',
+    "borrower username" : 'Keisha' }
 response = requests.get(BASE_URL + "borrow_request", json=borrow_request_data)
 print(response)
 print(response.json())
@@ -57,7 +57,7 @@ print(response.json())
 grant_book_request_data = {
   "lender username" : user_name,
   "book" : 'Food Recipes',
-  "borrower username" : 'mimmiso',
+  "borrower username" : 'Oge',
   "decision" : False 
   } 
 response = requests.get(BASE_URL + "grant_book_request", json=grant_book_request_data)
