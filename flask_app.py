@@ -193,7 +193,10 @@ def my_books(): #NOT TESTED
     if person.books_in_possession == None:
       response['msg'] = "your updated books:" + str(person.books_in_possession)
     else:
-      response['msg'] = "your updated books:" + str([x.title for x in person.books_in_possession])
+      book_titles = ""
+      for book_ in person.books_in_possession:
+        book_titles += "\n* " + book_.title
+      response['msg'] = "your updated books:" + book_titles
 
 
   if option == "add":
@@ -211,7 +214,10 @@ def my_books(): #NOT TESTED
     save_users_to_server()
     save_books_to_server()
     person = load_user(person.username)
-    response['msg'] = "your updated books:" + str([x.title for x in person.books_in_possession])
+    book_titles = ""
+    for book_ in person.books_in_possession:
+      book_titles += "\n* " + book_.title
+    response['msg'] = "your updated books:" + book_titles
 
   if option == "delete all":
     if person.books_in_possession == None:
@@ -270,7 +276,11 @@ def my_chats():
   if option == "view chats":
     # todo: show if the chats have unread messages or not
     if person.chat_tokens_map:
-      response['chats'] = str([other_person_in_chat for other_person_in_chat in person.chat_tokens_map.values()])
+      message = "You have chats with:"
+      for other_person_in_chat in person.chat_tokens_map.values():
+        message += "\n" + other_person_in_chat
+      str([other_person_in_chat for other_person_in_chat in person.chat_tokens_map.values()])
+      response['chats'] = message
     else:
       response['msg'] = "You have no chats"
     return jsonify(response)
