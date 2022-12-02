@@ -178,6 +178,10 @@ def borrower_options(username):
 
 if __name__=="__main__":
     l_or_s = input("Enter 'L' to login or 'S' to sign up or 'B' to search the Bookshelf for a title: ").lower().strip()
+
+    while l_or_s not in {'l', 's', 'b'}:
+        l_or_s = input("Please choose an option between 'L', 'S', and 'B'. ")
+        
     if l_or_s == 'b':
         book_search()
     else:
